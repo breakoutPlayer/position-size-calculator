@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Position Size Calculator — MT5</title>
+<style>
+:root{
+  --bg:#0e1214; --panel:#161c1f; --line:#2a3236; --text:#e8ece9;
+  --dim:#8a9a94; --accent:#5fd08c; --danger:#e0654f; --input:#0b0f11;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f5f6f4; --panel:#ffffff; --line:#dde2df; --text:#1a201d;
+    --dim:#5c6b64; --accent:#1f8a52; --danger:#c0402b; --input:#eef0ee;
+  }
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Courier New',ui-monospace,monospace;
+  min-height:100%; padding:28px 16px 60px;
+}
+.wrap{max-width:640px; margin:0 auto;}
+h1{
+  font-size:1.3rem; font-weight:700; letter-spacing:.01em; margin:0 0 4px;
+  border-bottom:2px solid var(--accent); padding-bottom:12px;
+}
+.sub{color:var(--dim); font-size:.85rem; margin:0 0 24px; line-height:1.5;}
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  padding:18px; margin-bottom:16px;
+}
+.card h2{font-size:.8rem; color:var(--accent); margin:0 0 14px; font-weight:700;}
+label{display:block; font-size:.78rem; color:var(--dim); margin-bottom:5px;}
+input,select{
+  width:100%; background:var(--input); border:1px solid var(--line); color:var(--text);
+  padding:10px; border-radius:4px; font-family:inherit; font-size:.95rem; margin-bottom:14px;
+}
+input:focus,select:focus{outline:none; border-color:var(--accent);}
+.row{display:flex; gap:12px;}
+.row > div{flex:1;}
+.help{font-size:.72rem; color:var(--dim); margin:-10px 0 14px; line-height:1.4;}
+.result{
+  background:var(--input); border:1px solid var(--line); border-radius:6px; padding:16px;
+  display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;
+}
+.result .label{color:var(--dim); font-size:.8rem;}
+.result .val{font-size:1.4rem; font-weight:700;}
+.result.main{border-color:var(--accent);}
+.result.main .val{color:var(--accent);}
+.result.risk .val{color:var(--danger);}
+.warn{font-size:.75rem; color:var(--danger); margin-top:4px;}
+.footer-note{font-size:.72rem; color:var(--dim); line-height:1.5; margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Position Size Calculator</h1>
+  <p class="sub">For MT5. Fill in your account and trade details — position size (lots) and dollar risk are calculated automatically.</p>
+
+  <div class="card">
+    <h2>ACCOUNT</h2>
+    <div class="row">
+      <div>
+        <label>Account balance ($)</label>
+        <input type="number" id="balance" value="1000" step="any">
+      </div>
+      <div>
+        <label>Risk per trade (%)</label>
+        <input type="number" id="riskPct" value="1" step="any">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>TRADE</h2>
+    <div class="row">
+      <div>
+        <label>Entry price</label>
+        <input type="number" id="entry" step="any" placeholder="e.g. 1.0950">
+      </div>
+      <div>
+        <label>Stop loss price</label>
+        <input type="number" id="stop" step="any" placeholder="e.g. 1.0900">
+      </div>
+    </div>
+    <label>Instrument</label>
+    <select id="instrument">
+      <optgroup label="Forex">
+        <option value="100000">Forex major/minor (standard lot — 100,000)</option>
+      </optgroup>
+      <optgroup label="Metals">
+        <option value="100">Gold XAUUSD (100 oz)</option>
+        <option value="5000">Silver XAGUSD (5,000 oz)</option>
+      </optgroup>
+      <optgroup label="Indices (CFD)">
+        <option value="1">US30 / US100 / US500 / DE40 / UK100 (1 per point)</option>
+      </optgroup>
+      <optgroup label="Energy">
+        <option value="1000">WTI/Brent Crude Oil (1,000 barrels)</option>
+      </optgroup>
+      <optgroup label="Crypto (CFD)">
+        <option value="1">BTCUSD / ETHUSD (1 coin)</option>
+      </optgroup>
+      <option value="custom">Custom / other — enter manually</option>
+    </select>
+    <div id="customWrap" style="display:none;">
+      <label>Contract size (units per 1.0 lot)</label>
+      <input type="number" id="contract" step="any" placeholder="e.g. 100000">
+    </div>
+    <div class="help">Values above are standard MT5/industry defaults. The5ers generally follows these, but always confirm on your account: right-click the symbol in Market Watch → Specification → "Contract size" — use Custom if it differs.</div>
+  </div>
+
+  <div class="result main">
+    <span class="label">Position size</span>
+    <span class="val" id="outLots">— lots</span>
+  </div>
+  <div class="result risk">
+    <span class="label">Dollar risk if SL hit</span>
+    <span class="val" id="outRisk">—</span>
+  </div>
+  <div class="result">
+    <span class="label">Risk amount (from % above)</span>
+    <span class="val" id="outRiskAmt">—</span>
+  </div>
+  <div id="outWarn" class="warn"></div>
+
+  <div class="footer-note">
+    Formula used: Position size (lots) = (Balance × Risk%) ÷ (|Entry − Stop| × Contract size).<br>
+    This assumes your account currency matches the symbol's quote currency. If not, actual risk will differ slightly — check the "Instrument details" panel in MT5's Trade tab, which shows margin and pip value once you set the lot size, so you can sanity-check the number this calculator gives you.
+  </div>
+</div>
+
+<script>
+function fmt(n){
+  if(!isFinite(n)) return '—';
+  return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function getContract(){
+  const sel = document.getElementById('instrument').value;
+  if(sel === 'custom') return parseFloat(document.getElementById('contract').value);
+  return parseFloat(sel);
+}
+function calc(){
+  const balance = parseFloat(document.getElementById('balance').value)||0;
+  const riskPct = parseFloat(document.getElementById('riskPct').value)||0;
+  const entry = parseFloat(document.getElementById('entry').value);
+  const stop = parseFloat(document.getElementById('stop').value);
+  const contract = getContract();
+
+  const riskAmt = balance * (riskPct/100);
+  document.getElementById('outRiskAmt').textContent = '$'+fmt(riskAmt);
+
+  const warnEl = document.getElementById('outWarn');
+  warnEl.textContent = '';
+
+  if(!entry || !stop || !contract || entry===stop){
+    document.getElementById('outLots').textContent = '— lots';
+    document.getElementById('outRisk').textContent = '—';
+    return;
+  }
+  const dist = Math.abs(entry - stop);
+  const lots = riskAmt / (dist * contract);
+  const roundedLots = Math.floor(lots*100)/100; // round down to 2 decimals, never round up risk
+  const actualRisk = roundedLots * dist * contract;
+
+  document.getElementById('outLots').textContent = roundedLots.toFixed(2)+' lots';
+  document.getElementById('outRisk').textContent = '$'+fmt(actualRisk);
+
+  if(roundedLots < 0.01){
+    warnEl.textContent = 'Calculated size is below the minimum tradable lot (0.01). Widen your stop or increase risk %.';
+  }
+}
+['balance','riskPct','entry','stop','contract'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calc);
+});
+document.getElementById('instrument').addEventListener('change', function(){
+  document.getElementById('customWrap').style.display = (this.value==='custom') ? 'block' : 'none';
+  calc();
+});
+calc();
+</script>
+</body>
+</html>
