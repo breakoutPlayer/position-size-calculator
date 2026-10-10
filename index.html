@@ -51,6 +51,15 @@ input:focus,select:focus{outline:none; border-color:var(--accent);}
 .result.main{border-color:var(--accent);}
 .result.main .val{color:var(--accent);}
 .result.risk .val{color:var(--danger);}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+.chip{
+  background:var(--input); border:1px solid var(--line); color:var(--text);
+  padding:9px 12px; border-radius:4px; font-family:inherit; font-size:.82rem; cursor:pointer;
+  width:auto; margin:0; text-align:left;
+}
+.chip small{display:block; color:var(--dim); font-size:.68rem; margin-top:2px;}
+.chip.active{border-color:var(--accent); color:var(--accent); background:var(--panel);}
+.chip.active small{color:var(--accent);}
 .warn{font-size:.75rem; color:var(--danger); margin-top:4px;}
 .footer-note{font-size:.72rem; color:var(--dim); line-height:1.5; margin-top:20px;}
 </style>
@@ -69,7 +78,7 @@ input:focus,select:focus{outline:none; border-color:var(--accent);}
       </div>
       <div>
         <label>Risk per trade (%)</label>
-        <input type="number" id="riskPct" value="0.3" step="any">
+        <input type="number" id="riskPct" value="0.4" step="any">
       </div>
     </div>
   </div>
@@ -87,30 +96,31 @@ input:focus,select:focus{outline:none; border-color:var(--accent);}
       </div>
     </div>
     <label>Instrument</label>
-    <select id="instrument">
-      <optgroup label="Forex">
-        <option value="100000">Forex major/minor (standard lot — 100,000)</option>
-      </optgroup>
-      <optgroup label="Metals">
-        <option value="100">Gold XAUUSD (100 oz)</option>
-        <option value="5000">Silver XAGUSD (5,000 oz)</option>
-      </optgroup>
-      <optgroup label="Indices (CFD)">
-        <option value="1">US30 / US100 / US500 / DE40 / UK100 (1 per point)</option>
-      </optgroup>
-      <optgroup label="Energy">
-        <option value="1000">WTI/Brent Crude Oil (1,000 barrels)</option>
-      </optgroup>
-      <optgroup label="Crypto (CFD)">
-        <option value="1">BTCUSD / Others.. (1 coin)</option>
-      </optgroup>
-      <option value="custom">Custom / other — enter manually</option>
-    </select>
+    <div class="chips" id="instrument">
+      <button type="button" class="chip active" data-value="100000">Forex<small>100,000</small></button>
+      <button type="button" class="chip" data-value="100">Gold XAUUSD<small>100 oz</small></button>
+      <button type="button" class="chip" data-value="5000">Silver XAGUSD<small>5,000 oz</small></button>
+      <button type="button" class="chip" data-value="1">Indices<small>US30/US100/US500/DE40/UK100 · 1</small></button>
+      <button type="button" class="chip" data-value="1000">Oil WTI/Brent<small>1,000 bbl</small></button>
+      <button type="button" class="chip" data-value="1">Crypto<small>BTC/ETH · 1 coin</small></button>
+      <button type="button" class="chip" data-value="custom">Custom<small>enter manually</small></button>
+    </div>
     <div id="customWrap" style="display:none;">
       <label>Contract size (units per 1.0 lot)</label>
       <input type="number" id="contract" step="any" placeholder="e.g. 100000">
     </div>
     <div class="help">Values above are standard MT5/industry defaults. The5ers generally follows these, but always confirm on your account: right-click the symbol in Market Watch → Specification → "Contract size" — use Custom if it differs.</div>
+
+    <label>Does the pair's quote (2nd) currency match your account currency?</label>
+    <select id="quoteMatch">
+      <option value="yes">Yes — e.g. EURUSD, GBPUSD on a USD account</option>
+      <option value="no">No — e.g. USDJPY, EURJPY on a USD account</option>
+    </select>
+    <div id="convWrap" style="display:none;">
+      <label>Conversion rate to account currency (from MT5 quote)</label>
+      <input type="number" id="convRate" step="any" placeholder="e.g. USDJPY rate: 149.50">
+      <div class="help">For USDJPY-style pairs, enter the current USDJPY rate. For cross pairs like EURJPY on a USD account, enter the current USDJPY rate too (the quote currency's rate against USD).</div>
+    </div>
   </div>
 
   <div class="result main">
@@ -128,8 +138,8 @@ input:focus,select:focus{outline:none; border-color:var(--accent);}
   <div id="outWarn" class="warn"></div>
 
   <div class="footer-note">
-    Formula used: Position size (lots) = (Balance × Risk%) ÷ (|Entry − Stop| × Contract size).<br>
-    This assumes your account currency matches the symbol's quote currency. If not, actual risk will differ slightly — check the "Instrument details" panel in MT5's Trade tab, which shows margin and pip value once you set the lot size, so you can sanity-check the number this calculator gives you.
+    Formula used: Position size (lots) = (Balance × Risk%) ÷ ((|Entry − Stop| × Contract size) ÷ Conversion rate).<br>
+    Still sanity-check against MT5's Trade tab (shows margin/PnL once the position is open) — conversion rates you type in may drift slightly from the live rate MT5 uses at execution.
   </div>
 </div>
 
@@ -138,8 +148,9 @@ function fmt(n){
   if(!isFinite(n)) return '—';
   return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
+let selectedInstrument = '100000';
 function getContract(){
-  const sel = document.getElementById('instrument').value;
+  const sel = selectedInstrument;
   if(sel === 'custom') return parseFloat(document.getElementById('contract').value);
   return parseFloat(sel);
 }
@@ -161,10 +172,21 @@ function calc(){
     document.getElementById('outRisk').textContent = '—';
     return;
   }
+  const needsConv = document.getElementById('quoteMatch').value === 'no';
+  const convRate = parseFloat(document.getElementById('convRate').value);
+  if(needsConv && (!convRate || convRate<=0)){
+    document.getElementById('outLots').textContent = '— lots';
+    document.getElementById('outRisk').textContent = '—';
+    warnEl.textContent = 'Enter the conversion rate to get an accurate result for this pair.';
+    return;
+  }
+  const conv = needsConv ? convRate : 1;
+
   const dist = Math.abs(entry - stop);
-  const lots = riskAmt / (dist * contract);
+  // raw risk per lot is in quote currency; divide by conv rate to get account currency
+  const lots = riskAmt / ((dist * contract) / conv);
   const roundedLots = Math.floor(lots*100)/100; // round down to 2 decimals, never round up risk
-  const actualRisk = roundedLots * dist * contract;
+  const actualRisk = (roundedLots * dist * contract) / conv;
 
   document.getElementById('outLots').textContent = roundedLots.toFixed(2)+' lots';
   document.getElementById('outRisk').textContent = '$'+fmt(actualRisk);
@@ -173,11 +195,50 @@ function calc(){
     warnEl.textContent = 'Calculated size is below the minimum tradable lot (0.01). Widen your stop or increase risk %.';
   }
 }
-['balance','riskPct','entry','stop','contract'].forEach(id=>{
+['balance','riskPct','entry','stop','contract','convRate'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calc);
+});
+document.querySelectorAll('#instrument .chip').forEach(function(chip){
+  chip.addEventListener('click', function(){
+    document.querySelectorAll('#instrument .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    selectedInstrument = chip.dataset.value;
+    document.getElementById('customWrap').style.display = (selectedInstrument==='custom') ? 'block' : 'none';
+    calc();
+  });
+});
+document.getElementById('quoteMatch').value === 'no';
+  const convRate = parseFloat(document.getElementById('convRate').value);
+  if(needsConv && (!convRate || convRate<=0)){
+    document.getElementById('outLots').textContent = '— lots';
+    document.getElementById('outRisk').textContent = '—';
+    warnEl.textContent = 'Enter the conversion rate to get an accurate result for this pair.';
+    return;
+  }
+  const conv = needsConv ? convRate : 1;
+
+  const dist = Math.abs(entry - stop);
+  // raw risk per lot is in quote currency; divide by conv rate to get account currency
+  const lots = riskAmt / ((dist * contract) / conv);
+  const roundedLots = Math.floor(lots*100)/100; // round down to 2 decimals, never round up risk
+  const actualRisk = (roundedLots * dist * contract) / conv;
+
+  document.getElementById('outLots').textContent = roundedLots.toFixed(2)+' lots';
+  document.getElementById('outRisk').textContent = '$'+fmt(actualRisk);
+
+  if(roundedLots < 0.01){
+    warnEl.textContent = 'Calculated size is below the minimum tradable lot (0.01). Widen your stop or increase risk %.';
+  }
+}
+['balance','riskPct','entry','stop','contract','convRate'].forEach(id=>{
   document.getElementById(id).addEventListener('input', calc);
 });
 document.getElementById('instrument').addEventListener('change', function(){
   document.getElementById('customWrap').style.display = (this.value==='custom') ? 'block' : 'none';
+  calc();
+});
+document.getElementById('quoteMatch').addEventListener('change', function(){
+  document.getElementById('convWrap').style.display = (this.value==='no') ? 'block' : 'none';
   calc();
 });
 calc();
