@@ -207,36 +207,6 @@ document.querySelectorAll('#instrument .chip').forEach(function(chip){
     calc();
   });
 });
-document.getElementById('quoteMatch').value === 'no';
-  const convRate = parseFloat(document.getElementById('convRate').value);
-  if(needsConv && (!convRate || convRate<=0)){
-    document.getElementById('outLots').textContent = '— lots';
-    document.getElementById('outRisk').textContent = '—';
-    warnEl.textContent = 'Enter the conversion rate to get an accurate result for this pair.';
-    return;
-  }
-  const conv = needsConv ? convRate : 1;
-
-  const dist = Math.abs(entry - stop);
-  // raw risk per lot is in quote currency; divide by conv rate to get account currency
-  const lots = riskAmt / ((dist * contract) / conv);
-  const roundedLots = Math.floor(lots*100)/100; // round down to 2 decimals, never round up risk
-  const actualRisk = (roundedLots * dist * contract) / conv;
-
-  document.getElementById('outLots').textContent = roundedLots.toFixed(2)+' lots';
-  document.getElementById('outRisk').textContent = '$'+fmt(actualRisk);
-
-  if(roundedLots < 0.01){
-    warnEl.textContent = 'Calculated size is below the minimum tradable lot (0.01). Widen your stop or increase risk %.';
-  }
-}
-['balance','riskPct','entry','stop','contract','convRate'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', calc);
-});
-document.getElementById('instrument').addEventListener('change', function(){
-  document.getElementById('customWrap').style.display = (this.value==='custom') ? 'block' : 'none';
-  calc();
-});
 document.getElementById('quoteMatch').addEventListener('change', function(){
   document.getElementById('convWrap').style.display = (this.value==='no') ? 'block' : 'none';
   calc();
