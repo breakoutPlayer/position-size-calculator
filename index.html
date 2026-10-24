@@ -2,216 +2,73 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Position Size Calculator — MT5</title>
-<style>
-:root{
-  --bg:#0e1214; --panel:#161c1f; --line:#2a3236; --text:#e8ece9;
-  --dim:#8a9a94; --accent:#5fd08c; --danger:#e0654f; --input:#0b0f11;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#f5f6f4; --panel:#ffffff; --line:#dde2df; --text:#1a201d;
-    --dim:#5c6b64; --accent:#1f8a52; --danger:#c0402b; --input:#eef0ee;
-  }
-}
-*{box-sizing:border-box;}
-body{
-  margin:0; background:var(--bg); color:var(--text);
-  font-family:'Courier New',ui-monospace,monospace;
-  min-height:100%; padding:28px 16px 60px;
-}
-.wrap{max-width:640px; margin:0 auto;}
-h1{
-  font-size:1.3rem; font-weight:700; letter-spacing:.01em; margin:0 0 4px;
-  border-bottom:2px solid var(--accent); padding-bottom:12px;
-}
-.sub{color:var(--dim); font-size:.85rem; margin:0 0 24px; line-height:1.5;}
-.card{
-  background:var(--panel); border:1px solid var(--line); border-radius:6px;
-  padding:18px; margin-bottom:16px;
-}
-.card h2{font-size:.8rem; color:var(--accent); margin:0 0 14px; font-weight:700;}
-label{display:block; font-size:.78rem; color:var(--dim); margin-bottom:5px;}
-input,select{
-  width:100%; background:var(--input); border:1px solid var(--line); color:var(--text);
-  padding:10px; border-radius:4px; font-family:inherit; font-size:.95rem; margin-bottom:14px;
-}
-input:focus,select:focus{outline:none; border-color:var(--accent);}
-.row{display:flex; gap:12px;}
-.row > div{flex:1;}
-.help{font-size:.72rem; color:var(--dim); margin:-10px 0 14px; line-height:1.4;}
-.result{
-  background:var(--input); border:1px solid var(--line); border-radius:6px; padding:16px;
-  display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;
-}
-.result .label{color:var(--dim); font-size:.8rem;}
-.result .val{font-size:1.4rem; font-weight:700;}
-.result.main{border-color:var(--accent);}
-.result.main .val{color:var(--accent);}
-.result.risk .val{color:var(--danger);}
-.chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
-.chip{
-  background:var(--input); border:1px solid var(--line); color:var(--text);
-  padding:9px 12px; border-radius:4px; font-family:inherit; font-size:.82rem; cursor:pointer;
-  width:auto; margin:0; text-align:left;
-}
-.chip small{display:block; color:var(--dim); font-size:.68rem; margin-top:2px;}
-.chip.active{border-color:var(--accent); color:var(--accent); background:var(--panel);}
-.chip.active small{color:var(--accent);}
-.warn{font-size:.75rem; color:var(--danger); margin-top:4px;}
-.footer-note{font-size:.72rem; color:var(--dim); line-height:1.5; margin-top:20px;}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Position Size Calculator</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
+<header class="top">
   <h1>Position Size Calculator</h1>
-  <p class="sub">For MT5. Fill in your account and trade details — position size (lots) and dollar risk are calculated automatically.</p>
-
-  <div class="card">
-    <h2>ACCOUNT</h2>
-    <div class="row">
-      <div>
-        <label>Account balance ($)</label>
-        <input type="number" id="balance" value="100000" step="any">
+  <button id="theme" class="btn" aria-label="Toggle theme">Light / Dark</button>
+</header>
+<div id="notice" class="warn" hidden></div>
+<main class="grid">
+  <section class="col">
+    <div class="panel">
+      <h2>Account</h2>
+      <div class="row2">
+        <label>Balance (USD)<input id="bal" type="number" min="0" step="any"></label>
+        <label>Risk %<input id="risk" type="number" min="0" step="any"></label>
+        <label>Leverage 1:<input id="lev" type="number" min="1" step="any" list="levs"></label>
+        <label>Dollar risk<output id="dr" class="big"></output></label>
       </div>
-      <div>
-        <label>Risk per trade (%)</label>
-        <input type="number" id="riskPct" value="0.4" step="any">
+      <datalist id="levs"><option value="1"><option value="10"><option value="20"><option value="30"><option value="50"><option value="100"><option value="200"></datalist>
+      <div id="presets" class="chips"></div>
+    </div>
+    <div class="panel">
+      <h2>Instrument</h2>
+      <div id="cats" class="chips cats"></div>
+      <input id="search" type="search" placeholder="Search all instruments">
+      <div id="insts" class="chips insts"></div>
+      <details>
+        <summary>Advanced instrument settings</summary>
+        <div class="row2" id="adv"></div>
+        <button id="resetSpec" class="btn">Reset to defaults</button>
+        <p class="hint">Defaults are generic illustrations. Check them against your broker's contract specifications.</p>
+      </details>
+    </div>
+    <div class="panel">
+      <h2>Trade</h2>
+      <div class="seg" id="dir"><button data-d="long" class="on">Buy / Long</button><button data-d="short">Sell / Short</button></div>
+      <div class="seg" id="mode"><button data-m="risk" class="on">Risk-based size</button><button data-m="custom">Custom lot</button></div>
+      <div class="row2">
+        <label>Entry price<input id="entry" type="number" step="any"></label>
+        <label>Stop-loss / risk exit price<input id="sl" type="number" step="any"></label>
+        <label>Take-profit price (optional)<input id="tp" type="number" step="any"></label>
+        <label>Target RR if no TP<input id="rr" type="number" step="any" value="2"></label>
+        <label id="lotWrap" hidden>Custom lot<input id="lot" type="number" step="any"></label>
+        <label>Quote to USD rate (override)<input id="fxo" type="number" step="any" placeholder="auto estimate"></label>
+        <label>Round-trip cost (USD per lot)<input id="cost" type="number" step="any" value="0"></label>
       </div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>TRADE</h2>
-    <div class="row">
-      <div>
-        <label>Entry price</label>
-        <input type="number" id="entry" step="any" placeholder="e.g. 1.0950">
-      </div>
-      <div>
-        <label>Stop loss price</label>
-        <input type="number" id="stop" step="any" placeholder="e.g. 1.0900">
-      </div>
+  </section>
+  <section class="col">
+    <div class="panel">
+      <h2>Results</h2>
+      <div id="errs"></div>
+      <dl id="res"></dl>
+      <button id="copy" class="btn primary">Copy trade details</button>
+      <span id="msg" role="status"></span>
     </div>
-    <label>Instrument</label>
-    <div class="chips" id="instrument">
-      <button type="button" class="chip active" data-value="100000">Forex<small>100,000</small></button>
-      <button type="button" class="chip" data-value="100">Gold XAUUSD<small>100 oz</small></button>
-      <button type="button" class="chip" data-value="5000">Silver XAGUSD<small>5,000 oz</small></button>
-      <button type="button" class="chip" data-value="1">Indices<small>US30/US100/US500/DE40/UK100 · 1</small></button>
-      <button type="button" class="chip" data-value="1000">Oil WTI/Brent<small>1,000 bbl</small></button>
-      <button type="button" class="chip" data-value="1">Crypto<small>BTC/ETH · 1 coin</small></button>
-      <button type="button" class="chip" data-value="custom">Custom<small>enter manually</small></button>
+    <div class="panel">
+      <h2>Partial take-profit</h2>
+      <div id="parts"></div>
+      <button id="addPart" class="btn">Add exit</button>
+      <dl id="partRes"></dl>
     </div>
-    <div id="customWrap" style="display:none;">
-      <label>Contract size (units per 1.0 lot)</label>
-      <input type="number" id="contract" step="any" placeholder="e.g. 100000">
-    </div>
-    <div class="help">Values above are standard MT5/industry defaults. The5ers generally follows these, but always confirm on your account: right-click the symbol in Market Watch → Specification → "Contract size" — use Custom if it differs.</div>
-
-    <label>Does the pair's quote (2nd) currency match your account currency?</label>
-    <select id="quoteMatch">
-      <option value="yes">Yes — e.g. EURUSD, GBPUSD on a USD account</option>
-      <option value="no">No — e.g. USDJPY, EURJPY on a USD account</option>
-    </select>
-    <div id="convWrap" style="display:none;">
-      <label>Conversion rate to account currency (from MT5 quote)</label>
-      <input type="number" id="convRate" step="any" placeholder="e.g. USDJPY rate: 149.50">
-      <div class="help">For USDJPY-style pairs, enter the current USDJPY rate. For cross pairs like EURJPY on a USD account, enter the current USDJPY rate too (the quote currency's rate against USD).</div>
-    </div>
-  </div>
-
-  <div class="result main">
-    <span class="label">Position size</span>
-    <span class="val" id="outLots">— lots</span>
-  </div>
-  <div class="result risk">
-    <span class="label">Dollar risk if SL hit</span>
-    <span class="val" id="outRisk">—</span>
-  </div>
-  <div class="result">
-    <span class="label">Risk amount (from % above)</span>
-    <span class="val" id="outRiskAmt">—</span>
-  </div>
-  <div id="outWarn" class="warn"></div>
-
-  <div class="footer-note">
-    Formula used: Position size (lots) = (Balance × Risk%) ÷ ((|Entry − Stop| × Contract size) ÷ Conversion rate).<br>
-    Still sanity-check against MT5's Trade tab (shows margin/PnL once the position is open) — conversion rates you type in may drift slightly from the live rate MT5 uses at execution.
-  </div>
-</div>
-
-<script>
-function fmt(n){
-  if(!isFinite(n)) return '—';
-  return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-let selectedInstrument = '100000';
-function getContract(){
-  const sel = selectedInstrument;
-  if(sel === 'custom') return parseFloat(document.getElementById('contract').value);
-  return parseFloat(sel);
-}
-function calc(){
-  const balance = parseFloat(document.getElementById('balance').value)||0;
-  const riskPct = parseFloat(document.getElementById('riskPct').value)||0;
-  const entry = parseFloat(document.getElementById('entry').value);
-  const stop = parseFloat(document.getElementById('stop').value);
-  const contract = getContract();
-
-  const riskAmt = balance * (riskPct/100);
-  document.getElementById('outRiskAmt').textContent = '$'+fmt(riskAmt);
-
-  const warnEl = document.getElementById('outWarn');
-  warnEl.textContent = '';
-
-  if(!entry || !stop || !contract || entry===stop){
-    document.getElementById('outLots').textContent = '— lots';
-    document.getElementById('outRisk').textContent = '—';
-    return;
-  }
-  const needsConv = document.getElementById('quoteMatch').value === 'no';
-  const convRate = parseFloat(document.getElementById('convRate').value);
-  if(needsConv && (!convRate || convRate<=0)){
-    document.getElementById('outLots').textContent = '— lots';
-    document.getElementById('outRisk').textContent = '—';
-    warnEl.textContent = 'Enter the conversion rate to get an accurate result for this pair.';
-    return;
-  }
-  const conv = needsConv ? convRate : 1;
-
-  const dist = Math.abs(entry - stop);
-  // raw risk per lot is in quote currency; divide by conv rate to get account currency
-  const lots = riskAmt / ((dist * contract) / conv);
-  const roundedLots = Math.floor(lots*100)/100; // round down to 2 decimals, never round up risk
-  const actualRisk = (roundedLots * dist * contract) / conv;
-
-  document.getElementById('outLots').textContent = roundedLots.toFixed(2)+' lots';
-  document.getElementById('outRisk').textContent = '$'+fmt(actualRisk);
-
-  if(roundedLots < 0.01){
-    warnEl.textContent = 'Calculated size is below the minimum tradable lot (0.01). Widen your stop or increase risk %.';
-  }
-}
-['balance','riskPct','entry','stop','contract','convRate'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', calc);
-});
-document.querySelectorAll('#instrument .chip').forEach(function(chip){
-  chip.addEventListener('click', function(){
-    document.querySelectorAll('#instrument .chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    selectedInstrument = chip.dataset.value;
-    document.getElementById('customWrap').style.display = (selectedInstrument==='custom') ? 'block' : 'none';
-    calc();
-  });
-});
-document.getElementById('quoteMatch').addEventListener('change', function(){
-  document.getElementById('convWrap').style.display = (this.value==='no') ? 'block' : 'none';
-  calc();
-});
-calc();
-</script>
+  </section>
+</main>
+<footer>Results are estimates. Execution, costs and broker specifications can change the real outcome.</footer>
+<script src="script.js"></script>
 </body>
 </html>
