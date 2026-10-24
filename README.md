@@ -4,7 +4,7 @@ A static, offline position sizing tool built with HTML, CSS and vanilla JavaScri
 
 ## Features
 - Risk-based or custom-lot sizing, long and short
-- Six visible asset categories, 70+ editable instruments, cross-category search
+- Six visible asset categories, 60+ editable instruments (crypto is one generic contract), cross-category search
 - Pip, tick and contract-size methods, quote-to-USD conversion (estimate or your override)
 - Margin from leverage, or a margin rate override
 - Risk-to-reward and a partial take-profit calculator

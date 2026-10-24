@@ -13,7 +13,8 @@ const DEFAULTS = [
   lin('XAGUSD','Silver',5000,'USD',{tick:.001}), lin('XAGEUR','Silver',5000,'EUR',{tick:.001}), lin('XAGGBP','Silver',5000,'GBP',{tick:.001}),
   ...[['US30','USD'],['US100','USD'],['US500','USD'],['US2000','USD'],['UK100','GBP'],['GER40','EUR'],['FRA40','EUR'],['JP225','JPY'],['AUS200','AUD'],['HK50','HKD']].map(([s,q]) => lin(s,'Indices',1,q,{min:.1,step:.1,tick:1})),
   lin('USOIL','Oils',1000,'USD'), lin('UKOIL','Oils',1000,'USD'), lin('XTIUSD','Oils',1000,'USD'), lin('XBRUSD','Oils',1000,'USD'), lin('NATGAS','Oils',10000,'USD',{tick:.001}),
-  ...'BTC ETH SOL XRP LTC ADA DOGE'.split(' ').map(c => lin(c+'USD','Crypto',1,'USD',{max:1000,tick:c==='BTC'?1:.01}))
+  // One generic crypto contract: 1 lot = 1 coin, USD-quoted. Enter any coin's price; edit specs if your exchange differs.
+  lin('CRYPTO','Crypto',1,'USD',{min:.001,step:.001,max:10000,tick:.01})
 ];
 const CATS = ['Forex','Gold','Silver','Indices','Oils','Crypto'];
 
@@ -135,10 +136,11 @@ function addRow(dl, k, v, cls = '') { dl.append(el('dt', {className:cls.includes
 
 function renderChips() {
   const cats = $('cats'); cats.replaceChildren();
-  CATS.forEach(c => { const b = el('button', {className:c === S.cat ? 'on' : ''}, c); b.onclick = () => { S.cat = c; $('search').value = ''; renderChips(); }; cats.append(b); });
+  CATS.forEach(c => { const b = el('button', {className:c === S.cat ? 'on' : ''}, c); b.onclick = () => { S.cat = c; $('search').value = ''; if (c === 'Crypto') { S.sym = 'CRYPTO'; store.set('sym', S.sym); renderAdv(); update(); } renderChips(); }; cats.append(b); });
   const q = $('search').value.trim().toUpperCase();
   const list = DEFAULTS.filter(d => q ? d.s.includes(q) : d.cat === S.cat);
   const box = $('insts'); box.replaceChildren();
+  if (S.cat === 'Crypto' && !q) { box.append(el('span', {className:'hint'}, 'Crypto uses one generic contract (1 lot = 1 coin, USD). Just enter the coin\'s entry and stop prices.')); return; }
   if (!list.length) box.append(el('span', {className:'hint'}, 'No instrument matches your search.'));
   list.forEach(d => { const b = el('button', {className:d.s === S.sym ? 'on' : ''}, d.s); b.onclick = () => { S.sym = d.s; S.cat = d.cat; store.set('sym', d.s); renderChips(); renderAdv(); update(); }; box.append(b); });
 }
