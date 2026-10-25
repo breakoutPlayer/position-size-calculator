@@ -10,18 +10,6 @@ A static, offline position sizing tool built with HTML, CSS and vanilla JavaScri
 - Risk-to-reward and a partial take-profit calculator
 - Dark/light theme, saved settings, copy trade details
 
-## Files
-`index.html`, `style.css`, `script.js`, `README.md`
-
-## Run locally
-Open `index.html` in a browser.
-
-## Deploy on GitHub Pages
-1. Create a new repository on GitHub.
-2. Upload the four files to the repository root.
-3. Open Settings > Pages, set Source to "Deploy from a branch", choose `main` and `/ (root)`, then save.
-4. Visit `https://<your-user>.github.io/<repo-name>/` after a minute or two.
-
 ## Edit instrument specs
 Change values in **Advanced instrument settings** (saved as overrides, with a reset button), or edit the `DEFAULTS` list at the top of `script.js`.
 
