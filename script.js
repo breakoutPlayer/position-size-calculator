@@ -5,8 +5,8 @@
 // Estimated quote->USD rates. Illustrative only; override in the UI.
 const EST_RATES = {USD:1, EUR:1.08, GBP:1.27, JPY:0.0066, CAD:0.73, CHF:1.12, AUD:0.65, NZD:0.60, HKD:0.128};
 const J = (s) => s.endsWith('JPY');
-const fx = (s) => ({s, cat:'Forex', cs:100000, min:.01, max:100, step:.01, pip:J(s)?0.01:0.0001, tick:J(s)?0.001:0.00001, tickVal:1, quote:s.slice(3), lev:1, m:'fx'});
-const lin = (s, cat, cs, quote, o={}) => Object.assign({s, cat, cs, min:.01, max:100, step:.01, pip:0, tick:.01, tickVal:1, quote, lev:1, m:'linear'}, o);
+const fx = (s) => ({s, cat:'Forex', cs:100000, min:.01, max:null, step:.01, pip:J(s)?0.01:0.0001, tick:J(s)?0.001:0.00001, tickVal:1, quote:s.slice(3), lev:1, m:'fx'});
+const lin = (s, cat, cs, quote, o={}) => Object.assign({s, cat, cs, min:.01, max:null, step:.01, pip:0, tick:.01, tickVal:1, quote, lev:1, m:'linear'}, o);
 const DEFAULTS = [
   ...'EURUSD GBPUSD AUDUSD NZDUSD USDCAD USDCHF USDJPY EURJPY GBPJPY EURGBP EURAUD GBPAUD AUDJPY CADJPY CHFJPY EURNZD GBPNZD AUDNZD CADCHF AUDCAD NZDCAD NZDJPY EURCAD EURCHF GBPCAD GBPCHF AUDCHF NZDCHF'.split(' ').map(fx),
   lin('XAUUSD','Gold',100,'USD'), lin('XAUEUR','Gold',100,'EUR'), lin('XAUGBP','Gold',100,'GBP'),
@@ -14,7 +14,7 @@ const DEFAULTS = [
   ...[['US30','USD'],['US100','USD'],['US500','USD'],['US2000','USD'],['UK100','GBP'],['GER40','EUR'],['FRA40','EUR'],['JP225','JPY'],['AUS200','AUD'],['HK50','HKD']].map(([s,q]) => lin(s,'Indices',1,q,{min:.1,step:.1,tick:1})),
   lin('USOIL','Oils',1000,'USD'), lin('UKOIL','Oils',1000,'USD'), lin('XTIUSD','Oils',1000,'USD'), lin('XBRUSD','Oils',1000,'USD'), lin('NATGAS','Oils',10000,'USD',{tick:.001}),
   // One generic crypto contract: 1 lot = 1 coin, USD-quoted. Enter any coin's price; edit specs if your exchange differs.
-  lin('CRYPTO','Crypto',1,'USD',{min:.001,step:.001,max:10000,tick:.01})
+  lin('CRYPTO','Crypto',1,'USD',{min:.001,step:.001,tick:.01})
 ];
 const CATS = ['Forex','Gold','Silver','Indices','Oils','Crypto'];
 
@@ -22,6 +22,7 @@ const CATS = ['Forex','Gold','Silver','Indices','Oils','Crypto'];
 const decimals = (n) => (String(n).split('.')[1] || '').length;
 const calculateDollarRisk = (bal, pct) => bal * pct / 100;
 const calculateStopDistance = (dir, entry, sl) => dir === 'long' ? entry - sl : sl - entry; // must be > 0
+const maxLot = (c) => c.max > 0 ? c.max : Infinity; // empty or 0 means no upper limit
 const aligned = (v, step) => Math.abs(v / step - Math.round(v / step)) < 1e-6;
 const floorToStep = (v, step) => +(Math.floor(v / step + 1e-9) * step).toFixed(decimals(step));
 
@@ -58,7 +59,7 @@ function validateTradeInputs(i, inst) {
   if (!(i.risk > 0)) e.push('Risk percentage must be above zero.');
   if (!(i.lev >= 1)) e.push('Leverage must be at least 1.');
   if (!(inst.cs > 0)) e.push('Contract size must be above zero.');
-  if (!(inst.step > 0) || !(inst.min > 0) || inst.max < inst.min) e.push('Lot specs are invalid: check min, max and step.');
+  if (!(inst.step > 0) || !(inst.min > 0) || maxLot(inst) < inst.min) e.push('Lot specs are invalid: check min, max and step.');
   else if (!aligned(inst.min, inst.step)) e.push('Minimum lot is not a multiple of the lot step.');
   if (inst.m === 'tick' && !(inst.tick > 0 && inst.tickVal > 0)) e.push('Tick size and tick value are required for the tick method.');
   if (inst.m === 'fx' && !(inst.pip > 0)) e.push('Pip size is required for Forex.');
@@ -89,12 +90,12 @@ function calculatePositionSize(i, inst) {
     lots = i.lot;
     if (!(lots > 0)) return {errors:['Enter a custom lot size.'], warns, budget};
     if (lots < inst.min) return {errors:[`Custom lot is below the minimum of ${inst.min}.`], warns, budget};
-    if (lots > inst.max) return {errors:[`Custom lot is above the maximum of ${inst.max}.`], warns, budget};
+    if (lots > maxLot(inst)) return {errors:[`Custom lot is above the maximum of ${inst.max}.`], warns, budget};
     if (!aligned(lots, inst.step)) return {errors:[`Custom lot must be a multiple of ${inst.step}.`], warns, budget};
   } else {
     lots = floorToStep(raw, inst.step);
     if (lots < inst.min) return {errors:[`The minimum lot (${inst.min}) risks more than your budget. Raw size was ${raw.toFixed(4)} lots.`], warns, budget, perLot};
-    if (lots > inst.max) { lots = inst.max; note = `Capped at the maximum lot of ${inst.max}.`; }
+    if (lots > maxLot(inst)) { lots = inst.max; note = `Capped at the maximum lot of ${inst.max}.`; }
   }
   const risk = lots * perLot;
   if (risk > budget * 1.000001) warns.push(`This size risks ${fmt(risk)}, above your ${fmt(budget)} budget.`);
@@ -144,7 +145,7 @@ function renderChips() {
   if (!list.length) box.append(el('span', {className:'hint'}, 'No instrument matches your search.'));
   list.forEach(d => { const b = el('button', {className:d.s === S.sym ? 'on' : ''}, d.s); b.onclick = () => { S.sym = d.s; S.cat = d.cat; store.set('sym', d.s); renderChips(); renderAdv(); update(); }; box.append(b); });
 }
-const ADV = [['cs','Contract size'],['min','Min lot'],['max','Max lot'],['step','Lot step'],['tick','Tick size'],['tickVal','Tick value (quote ccy/lot)'],['pip','Pip size'],['lev','Default leverage'],['marginRate','Margin rate % (optional)'],['quote','Quote currency'],['m','Method']];
+const ADV = [['cs','Contract size'],['min','Min lot'],['max','Max lot (blank = no limit)'],['step','Lot step'],['tick','Tick size'],['tickVal','Tick value (quote ccy/lot)'],['pip','Pip size'],['lev','Default leverage'],['marginRate','Margin rate % (optional)'],['quote','Quote currency'],['m','Method']];
 function renderAdv() {
   const box = $('adv'); box.replaceChildren(); const cur = inst();
   ADV.forEach(([k, lab]) => {
