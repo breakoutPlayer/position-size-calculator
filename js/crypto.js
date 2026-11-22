@@ -95,14 +95,13 @@ function render() {
   }).join('');
 }
 
-$('copy').addEventListener('click', () => {
+$('copyQty').addEventListener('click', () => {
   if (!last || last.r.errors.length) return toast('Nothing to copy yet');
-  const { i, r } = last;
-  copyText([
-    `${r.dir.toUpperCase()} | Entry ${i.entry} | SL ${+i.sl.toFixed(priceDp(i.entry) + 2)}${slMode === "pct" ? ` (${i.slPct}%)` : ""}${i.tp > 0 ? ' | TP ' + i.tp : ''}`,
-    `Qty: ${r.qty}`, `Min leverage: ${r.minLev}x (margin ${fmtUsd(r.pos / r.minLev)})`,
-    `Loss at SL: -${fmtUsd(r.loss)}` + (Number.isFinite(r.profit) ? ` | Profit at TP: +${fmtUsd(r.profit)} | R:R 1:${fmtNum(r.rr, 2)}` : ''),
-  ].join('\n'));
+  copyText(String(last.r.qty));
+});
+$('copyPos').addEventListener('click', () => {
+  if (!last || last.r.errors.length) return toast('Nothing to copy yet');
+  copyText(last.r.pos.toFixed(2));
 });
 
 function syncSlMode() {

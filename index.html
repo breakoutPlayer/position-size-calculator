@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#0a0e12">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/styles.css?v=8">
-<script src="js/common.js?v=8"></script>
+<link rel="stylesheet" href="css/styles.css?v=9">
+<script src="js/common.js?v=9"></script>
 </head>
 <body>
 <nav class="nav">
@@ -69,18 +69,18 @@
         <h2>Result <span id="dir"></span></h2>
         <div id="alerts"></div>
         <div class="hero">
-          <div class="stat main"><div class="k">Quantity (coins)</div><div class="v" id="qty">—</div><div class="s" id="qtySub"></div></div>
+          <div class="stat main"><div class="k">Quantity (coins)</div><div class="v" id="qty">—</div><div class="s" id="qtySub"></div>
+            <div class="copy-row"><button class="copy-chip" id="copyQty" type="button">⧉ Copy qty</button><button class="copy-chip" id="copyPos" type="button">⧉ Copy $ position</button></div></div>
           <div class="stat"><div class="k">Loss at SL</div><div class="v down" id="loss">—</div><div class="s">incl. fees</div></div>
           <div class="stat"><div class="k">Profit at TP</div><div class="v up" id="profit">—</div><div class="s" id="rr"></div></div>
         </div>
         <h2 style="margin-top:1.25rem">Leverage &amp; margin</h2>
         <table class="levtable"><thead><tr><th>Leverage</th><th>Margin</th><th></th></tr></thead><tbody id="levRows"></tbody></table>
-        <button class="btn primary" id="copy">Copy results</button>
       </div>
     </section>
   </div>
 </main>
 <footer>Estimates only. Exchange fees, funding and slippage can change real results. Not financial advice.</footer>
-<script src="js/crypto.js?v=8"></script>
+<script src="js/crypto.js?v=9"></script>
 </body>
 </html>

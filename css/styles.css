@@ -192,3 +192,10 @@ footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 0 
 .levtable tr.min td { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .levtable tr.min td:first-child { border-radius: 8px 0 0 8px; } .levtable tr.min td:last-child { border-radius: 0 8px 8px 0; color: var(--accent); }
 .levtable tr.liq td { color: var(--down); }
+
+/* Copy chips inside the main result */
+.copy-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .7rem; }
+.copy-chip { font: 700 .8rem var(--font); padding: .45rem .8rem; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.copy-chip:hover { background: var(--accent); color: var(--bg); }
+.copy-chip:active { transform: translateY(1px); }

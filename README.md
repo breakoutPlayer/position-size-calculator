@@ -10,7 +10,7 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 
 ## Features
 - 4 themes (Terminal, Glass, Gold, Ocean), each with dark/light mode (default: Terminal dark)
-- Remembers your inputs, copy-results button
+- Remembers your inputs, one-tap copy of qty, $ position (crypto) or lots (forex)
 - Lots/qty rounded down to step, showing actual risk after rounding
 - Live FX rates from [Frankfurter](https://frankfurter.dev) (free, no key) with manual override
 - Installable PWA, works offline
@@ -24,7 +24,6 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 **Forex / CFD** (account in USD)
 - risk $ = balance × risk % ÷ trades
 - lots = risk $ ÷ (SL distance × contract size × quote→USD), floored to lot step
-- margin = lots × contract size × price (in USD) ÷ leverage
 
 ## Default contract sizes (edit per symbol in the app)
 FX 100,000 · XAUUSD 100 oz · XAGUSD 5,000 oz · indices 1 · oils 1,000 bbl. Brokers differ: verify yours.

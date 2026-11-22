@@ -20,12 +20,6 @@ function quoteToUsd(inst, entry, override) {
   const v = toUsd(inst.quote, rates);
   return { v, src: Number.isFinite(v) ? `live rate${rates && rates.date ? ' (' + rates.date + ')' : ''}` : 'unavailable' };
 }
-// Base -> USD (FX margin)
-function baseToUsd(inst, entry, q2u) {
-  if (inst.base === 'USD') return 1;
-  if (entry > 0 && Number.isFinite(q2u)) return entry * q2u;
-  return toUsd(inst.base, rates);
-}
 
 // Pure calculation
 function calcFx(i, inst) {
@@ -33,7 +27,6 @@ function calcFx(i, inst) {
   if (!(i.capital > 0)) errors.push('Balance must be above zero.');
   if (!(i.risk > 0)) errors.push('Risk % must be above zero.');
   if (!(i.trades >= 1)) errors.push('Number of trades must be at least 1.');
-  if (!(i.lev >= 1)) errors.push('Leverage must be at least 1.');
   if (!(inst.cs > 0) || !(inst.pip > 0) || !(inst.step > 0)) errors.push('Contract size, pip size and lot step must be above zero.');
 
   let dir, dist, sl = i.sl, tp = i.tp;
@@ -71,17 +64,7 @@ function calcFx(i, inst) {
   const tpDist = i.mode === 'price' ? (tp > 0 ? Math.abs(tp - i.entry) : NaN) : (i.tpPips > 0 ? i.tpPips * inst.pip : NaN);
   const profit = lots * tpDist * inst.cs * q.v;
   const rr = tpDist / dist;
-  const units = lots * inst.cs;
-  let notional = NaN;
-  if (inst.type === 'fx') notional = units * baseToUsd(inst, i.entry, q.v);
-  else if (i.entry > 0) notional = units * i.entry * q.v;
-  const margin = notional / i.lev;
-  const perTradeCap = i.capital / i.trades;
-  if (margin > perTradeCap) warns.push(`Margin ${fmtUsd(margin)} exceeds balance per trade ${fmtUsd(perTradeCap)}. Need at least 1:${Math.ceil(notional / perTradeCap)} leverage.`);
-  if (!Number.isFinite(notional)) warns.push('Enter the entry price to calculate margin.');
-
-  return { errors, warns, dir, dist, sl, tp, riskUsd, rawLots, lots, loss, profit, rr, units, notional, margin,
-    marginAll: margin * i.trades, pipVal: inst.pip * inst.cs * q.v, q };
+  return { errors, warns, dir, dist, sl, tp, riskUsd, rawLots, lots, loss, profit, rr, q };
 }
 
 /* ---------- UI ---------- */
@@ -119,12 +102,12 @@ function syncMode() {
   document.querySelectorAll('.pm-tp').forEach(el => el.hidden = mode === 'pips');
   $('modeHint').textContent = mode === 'pct' ? 'Pick long or short, then enter the stop-loss % from entry.' : mode === 'price'
     ? 'Long or short is detected from where your stop-loss sits.'
-    : 'Entry price is optional in this mode but needed for margin.';
+    : 'Entry price is optional in this mode.';
 }
 
 function render() {
   const inst = specOf($('sym').value);
-  const i = { capital: num('capital'), risk: num('risk'), trades: num('trades'), lev: num('lev'),
+  const i = { capital: num('capital'), risk: num('risk'), trades: num('trades'),
     entry: num('entry'), sl: num('sl'), tp: num('tp'), slPips: num('slPips'), tpPips: num('tpPips'),
     rate: num('rate'), mode, side };
   if (mode === 'pct') {
@@ -145,36 +128,25 @@ function render() {
     : `1 ${inst.quote} = ${Number.isFinite(q.v) ? fmtNum(q.v, 6) : '?'} USD — ${q.src}`;
   $('rate').placeholder = Number.isFinite(q.v) && !(i.rate > 0) ? 'auto ' + fmtNum(q.v, 6) : 'auto';
 
-  const keys = ['lots', 'margin', 'loss', 'profit', 'rr'];
+  const keys = ['lots', 'loss', 'profit'];
   if (r.errors.length) {
     keys.forEach(k => $(k).textContent = '—');
-    ['lotsSub', 'marginSub', 'lossSub', 'profitSub'].forEach(k => $(k).textContent = '');
+    ['lotsSub', 'lossSub', 'rr'].forEach(k => $(k).textContent = '');
     $('dir').innerHTML = '';
     return;
   }
   $('dir').innerHTML = `<span class="badge ${r.dir}">${r.dir.toUpperCase()}</span>`;
   $('lots').textContent = fmtNum(r.lots, 2);
   $('lotsSub').textContent = `SL ${fmtNum(r.dist / inst.pip, 1)} ${inst.unit}`;
-  $('margin').textContent = fmtUsd(r.margin);
-  $('marginSub').textContent = `1:${i.lev}`;
   $('loss').textContent = '-' + fmtUsd(r.loss);
   $('lossSub').textContent = `${fmtNum(r.loss / i.capital * 100, 2)}% of balance`;
   $('profit').textContent = Number.isFinite(r.profit) ? '+' + fmtUsd(r.profit) : '—';
-  $('profitSub').textContent = Number.isFinite(r.profit) ? '' : 'add a TP';
-  $('rr').textContent = Number.isFinite(r.rr) ? `1 : ${fmtNum(r.rr, 2)}` : '—';
+  $('rr').textContent = Number.isFinite(r.rr) ? `R:R 1 : ${fmtNum(r.rr, 2)}` : 'add a TP';
 }
 
-$('copy').addEventListener('click', () => {
-  if (!last || last.r.errors.length) return toast('Nothing to copy yet');
-  const { i, r, inst } = last;
-  const dp = i.entry > 0 ? priceDp(i.entry) : 5;
-  copyText([
-    `${inst.s} ${r.dir.toUpperCase()}` + (i.entry > 0 ? ` | Entry ${i.entry}` : '') +
-      (r.sl > 0 ? ` | SL ${(+r.sl).toFixed(dp)}` : '') + (r.tp > 0 ? ` | TP ${(+r.tp).toFixed(dp)}` : ''),
-    `Lots: ${r.lots}`, `SL: ${fmtNum(r.dist / inst.pip, 1)} ${inst.unit}`,
-    `Loss at SL: -${fmtUsd(r.loss)}` + (Number.isFinite(r.profit) ? ` | Profit at TP: +${fmtUsd(r.profit)} | R:R 1:${fmtNum(r.rr, 2)}` : ''),
-    `Margin: ${fmtUsd(r.margin)} @ 1:${i.lev}`,
-  ].join('\n'));
+$('copyLots').addEventListener('click', () => {
+  if (!last || last.r.errors.length || !(last.r.lots > 0)) return toast('Nothing to copy yet');
+  copyText(String(last.r.lots));
 });
 
 fillSymbols();
@@ -182,7 +154,7 @@ persistInputs('forex');
 if (!INSTRUMENTS.some(x => x.s === $('sym').value)) $('sym').value = 'EURUSD';
 loadSpecFields(); syncMode();
 
-['capital', 'risk', 'trades', 'lev', 'entry', 'sl', 'tp', 'slPct', 'slPips', 'tpPips'].forEach(k => $(k).addEventListener('input', render));
+['capital', 'risk', 'trades', 'entry', 'sl', 'tp', 'slPct', 'slPips', 'tpPips'].forEach(k => $(k).addEventListener('input', render));
 ['cs', 'pip', 'step'].forEach(k => $(k).addEventListener('input', saveSpec));
 $('rate').addEventListener('input', () => { Store.set('rate:' + specOf($('sym').value).quote, $('rate').value); render(); });
 $('sym').addEventListener('change', () => { loadSpecFields(); render(); });
@@ -193,4 +165,4 @@ document.querySelectorAll('#dirSeg button').forEach(b => b.addEventListener('cli
 
 render();
 loadRates().then(r => { if (r) { rates = r; render(); } });
-initMobileBar('Lot size', 'lots', [['Margin', 'margin'], ['Loss', 'loss']]);
+initMobileBar('Lot size', 'lots', [['Loss', 'loss'], ['Profit', 'profit']]);
