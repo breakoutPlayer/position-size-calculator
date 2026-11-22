@@ -3,72 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Position Size Calculator</title>
-<link rel="stylesheet" href="style.css?v=4">
+<title>Crypto Position Size Calculator</title>
+<meta name="description" content="Crypto futures position size, quantity and margin calculator with leverage, fees and risk per trade.">
+<meta name="theme-color" content="#0a0e12">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/common.js"></script>
 </head>
 <body>
-<header class="top">
-  <h1>Position Size Calculator</h1>
-  <button id="theme" class="btn" aria-label="Toggle theme">Light / Dark</button>
-</header>
-<div id="notice" class="warn" hidden></div>
-<main class="grid">
-  <section class="col">
-    <div class="panel">
-      <h2>Account</h2>
-      <div class="row2">
-        <label>Balance (USD)<input id="bal" type="number" min="0" step="any"></label>
-        <label>Risk %<input id="risk" type="number" min="0" step="any"></label>
-        <label>Leverage 1:<input id="lev" type="number" min="1" step="any" list="levs"></label>
-        <label>Dollar risk<output id="dr" class="big"></output></label>
+<nav class="nav">
+  <div class="brand"><span class="logo">⚖</span> Position Sizer</div>
+  <div class="tabs"><a href="index.html" class="active">Crypto</a><a href="forex.html">Forex &amp; CFDs</a></div>
+  <div class="theme-ctl">
+    <div class="swatches">
+      <button class="swatch" data-t="terminal" title="Terminal"></button>
+      <button class="swatch" data-t="glass" title="Glass"></button>
+      <button class="swatch" data-t="gold" title="Gold"></button>
+      <button class="swatch" data-t="ocean" title="Ocean"></button>
+    </div>
+    <button class="icon-btn" id="modeBtn" aria-label="Toggle dark/light mode"></button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-head">
+    <h1>Crypto Futures Calculator</h1>
+    <p>Quantity and margin from your capital, risk %, leverage and stop-loss. Fees included (taker on entry and exit).</p>
+  </div>
+  <div class="grid">
+    <section>
+      <div class="card">
+        <h2>Account</h2>
+        <div class="fields">
+          <label>Capital (USDT)<input id="capital" type="number" min="0" step="any" value="1000" data-save></label>
+          <label>Risk %<input id="risk" type="number" min="0" step="any" value="2" data-save></label>
+          <label>Number of trades<input id="trades" type="number" min="1" step="1" value="1" data-save></label>
+          <label>Leverage (x)<input id="lev" type="number" min="1" step="any" value="10" data-save></label>
+        </div>
+        <p class="hint">Risk per trade = capital × risk % ÷ number of trades.</p>
       </div>
-      <datalist id="levs"><option value="1"><option value="10"><option value="20"><option value="30"><option value="50"><option value="100"><option value="200"></datalist>
-      <div id="presets" class="chips"></div>
-    </div>
-    <div class="panel">
-      <h2>Instrument</h2>
-      <div id="cats" class="chips cats"></div>
-      <input id="search" type="search" placeholder="Search all instruments">
-      <div id="insts" class="chips insts"></div>
-      <details>
-        <summary>Advanced instrument settings</summary>
-        <div class="row2" id="adv"></div>
-        <button id="resetSpec" class="btn">Reset to defaults</button>
-        <p class="hint">Defaults are generic illustrations. Check them against your broker's contract specifications.</p>
-      </details>
-    </div>
-    <div class="panel">
-      <h2>Trade</h2>
-      <div class="seg" id="dir"><button data-d="long" class="on">Buy / Long</button><button data-d="short">Sell / Short</button></div>
-      <div class="seg" id="mode"><button data-m="risk" class="on">Risk-based size</button><button data-m="custom">Custom lot</button></div>
-      <div class="row2">
-        <label>Entry price<input id="entry" type="number" step="any"></label>
-        <label>Stop-loss / risk exit price<input id="sl" type="number" step="any"></label>
-        <label>Take-profit price (optional)<input id="tp" type="number" step="any"></label>
-        <label>Target RR if no TP<input id="rr" type="number" step="any" value="2"></label>
-        <label id="lotWrap" hidden>Custom lot<input id="lot" type="number" step="any"></label>
-        <label>Quote to USD rate (override)<input id="fxo" type="number" step="any" placeholder="auto estimate"></label>
-        <label>Round-trip cost (USD per lot)<input id="cost" type="number" step="any" value="0"></label>
+      <div class="card">
+        <h2>Trade</h2>
+        <div class="fields">
+          <label>Entry price<input id="entry" type="number" min="0" step="any" placeholder="e.g. 65000" data-save></label>
+          <label>Stop-loss price<input id="sl" type="number" min="0" step="any" placeholder="e.g. 64000" data-save></label>
+          <label>Take-profit price<input id="tp" type="number" min="0" step="any" placeholder="optional" data-save></label>
+        </div>
+        <p class="hint">Long or short is detected automatically from where your stop-loss sits.</p>
+        <details style="margin-top:1rem">
+          <summary>Fees &amp; rounding</summary>
+          <div class="fields">
+            <label>Taker fee % (each side)<input id="fee" type="number" min="0" step="any" value="0.06" data-save></label>
+            <label>Qty step<input id="qstep" type="number" min="0" step="any" value="0.001" data-save></label>
+          </div>
+          <p class="hint">Default: Bitunix futures taker 0.06% (maker 0.02%). Worst case assumed: taker on entry and on exit.</p>
+        </details>
       </div>
-    </div>
-  </section>
-  <section class="col">
-    <div class="panel">
-      <h2>Results</h2>
-      <div id="errs"></div>
-      <dl id="res"></dl>
-      <button id="copy" class="btn primary">Copy trade details</button>
-      <span id="msg" role="status"></span>
-    </div>
-    <div class="panel">
-      <h2>Partial take-profit</h2>
-      <div id="parts"></div>
-      <button id="addPart" class="btn">Add exit</button>
-      <dl id="partRes"></dl>
-    </div>
-  </section>
+    </section>
+
+    <section>
+      <div class="card">
+        <h2>Result <span id="dir"></span></h2>
+        <div id="alerts"></div>
+        <div class="hero">
+          <div class="stat main"><div class="k">Quantity (coins)</div><div class="v" id="qty">—</div><div class="s" id="qtySub"></div></div>
+          <div class="stat"><div class="k">Margin</div><div class="v" id="margin">—</div><div class="s" id="marginSub"></div></div>
+          <div class="stat"><div class="k">Position value</div><div class="v" id="pos">—</div><div class="s" id="posSub"></div></div>
+        </div>
+        <div class="ladder" id="ladder"></div>
+        <dl class="rows">
+          <dt>Risk per trade (target)</dt><dd id="riskUsd">—</dd>
+          <dt>Loss at SL incl. fees</dt><dd id="loss" class="down">—</dd>
+          <dt>Profit at TP after fees</dt><dd id="profit" class="up">—</dd>
+          <dt>Risk : Reward</dt><dd id="rr">—</dd>
+          <dt>SL distance</dt><dd id="slDist">—</dd>
+          <dt>Total fees (round trip at SL)</dt><dd id="fees">—</dd>
+          <dt>Margin for all trades</dt><dd id="marginAll">—</dd>
+          <dt>Min. leverage suggested</dt><dd id="minLev">—</dd>
+        </dl>
+        <button class="btn primary" id="copy">Copy results</button>
+      </div>
+    </section>
+  </div>
 </main>
-<footer>Results are estimates. Execution, costs and broker specifications can change the real outcome.</footer>
-<script src="script.js?v=4"></script>
+<footer>Estimates only. Exchange fees, funding and slippage can change real results. Not financial advice.</footer>
+<script src="js/crypto.js"></script>
 </body>
 </html>

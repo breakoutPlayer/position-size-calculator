@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forex, Gold, Indices &amp; Oil Lot Size Calculator</title>
+<meta name="description" content="Lot size calculator for forex, gold, silver, indices and oil with risk %, stop-loss and leverage.">
+<meta name="theme-color" content="#0a0e12">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/common.js"></script>
+</head>
+<body>
+<nav class="nav">
+  <div class="brand"><span class="logo">⚖</span> Position Sizer</div>
+  <div class="tabs"><a href="index.html">Crypto</a><a href="forex.html" class="active">Forex &amp; CFDs</a></div>
+  <div class="theme-ctl">
+    <div class="swatches">
+      <button class="swatch" data-t="terminal" title="Terminal"></button>
+      <button class="swatch" data-t="glass" title="Glass"></button>
+      <button class="swatch" data-t="gold" title="Gold"></button>
+      <button class="swatch" data-t="ocean" title="Ocean"></button>
+    </div>
+    <button class="icon-btn" id="modeBtn" aria-label="Toggle dark/light mode"></button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-head">
+    <h1>Forex &amp; CFD Lot Calculator</h1>
+    <p>Lot size for forex, gold, silver, indices and oil from your balance, risk % and stop-loss. Account currency: USD.</p>
+  </div>
+  <div class="grid">
+    <section>
+      <div class="card">
+        <h2>Account</h2>
+        <div class="fields">
+          <label>Balance (USD)<input id="capital" type="number" min="0" step="any" value="10000" data-save></label>
+          <label>Risk %<input id="risk" type="number" min="0" step="any" value="1" data-save></label>
+          <label>Number of trades<input id="trades" type="number" min="1" step="1" value="1" data-save></label>
+          <label>Leverage (1:x)<input id="lev" type="number" min="1" step="any" value="100" data-save></label>
+        </div>
+        <p class="hint">Risk per trade = balance × risk % ÷ number of trades.</p>
+      </div>
+      <div class="card">
+        <h2>Trade</h2>
+        <label style="margin-bottom:.9rem">Instrument<select id="sym" data-save></select></label>
+        <div class="seg" id="modeSeg"><button data-m="price" class="on">Prices</button><button data-m="pips">Pips / points</button></div>
+        <div class="seg" id="dirSeg" hidden><button data-d="long" class="on">Buy / Long</button><button data-d="short">Sell / Short</button></div>
+        <div class="fields">
+          <label>Entry price<input id="entry" type="number" min="0" step="any" data-save></label>
+          <label class="pm-price">Stop-loss price<input id="sl" type="number" min="0" step="any" data-save></label>
+          <label class="pm-price">Take-profit price<input id="tp" type="number" min="0" step="any" placeholder="optional" data-save></label>
+          <label class="pm-pips" hidden><span>Stop-loss (<span class="unit">pips</span>)</span><input id="slPips" type="number" min="0" step="any" data-save></label>
+          <label class="pm-pips" hidden><span>Take-profit (<span class="unit">pips</span>)</span><input id="tpPips" type="number" min="0" step="any" placeholder="optional" data-save></label>
+        </div>
+        <p class="hint" id="modeHint"></p>
+        <details style="margin-top:1rem">
+          <summary>Instrument settings &amp; FX rate</summary>
+          <div class="fields">
+            <label>Contract size / lot<input id="cs" type="number" min="0" step="any"></label>
+            <label><span>Pip / point size</span><input id="pip" type="number" min="0" step="any"></label>
+            <label>Lot step<input id="step" type="number" min="0" step="any"></label>
+            <label><span>1 <span id="qccy">USD</span> in USD</span><input id="rate" type="number" min="0" step="any" placeholder="auto"></label>
+          </div>
+          <p class="hint" id="rateInfo"></p>
+          <button class="btn" id="resetSpec" style="margin-top:.6rem">Reset this symbol to defaults</button>
+          <button class="btn" id="refreshRates" style="margin-top:.6rem">Refresh live rates</button>
+          <p class="hint">Contract sizes vary by broker (e.g. some use 100 barrels for oil or 10 per index lot). Check yours and edit here; changes are saved per symbol.</p>
+        </details>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <h2>Result <span id="dir"></span></h2>
+        <div id="alerts"></div>
+        <div class="hero">
+          <div class="stat main"><div class="k">Lot size</div><div class="v" id="lots">—</div><div class="s" id="lotsSub"></div></div>
+          <div class="stat"><div class="k">Margin</div><div class="v" id="margin">—</div><div class="s" id="marginSub"></div></div>
+          <div class="stat"><div class="k">Loss at SL</div><div class="v down" id="loss">—</div><div class="s" id="lossSub"></div></div>
+        </div>
+        <div class="ladder" id="ladder"></div>
+        <dl class="rows">
+          <dt>Risk per trade (target)</dt><dd id="riskUsd">—</dd>
+          <dt>Profit at TP</dt><dd id="profit" class="up">—</dd>
+          <dt>Risk : Reward</dt><dd id="rr">—</dd>
+          <dt>Stop-loss distance</dt><dd id="slDist">—</dd>
+          <dt><span class="unit">Pip</span> value per 1.0 lot</dt><dd id="pipVal">—</dd>
+          <dt>Units / contracts</dt><dd id="units">—</dd>
+          <dt>Position value</dt><dd id="notional">—</dd>
+          <dt>Margin for all trades</dt><dd id="marginAll">—</dd>
+        </dl>
+        <button class="btn primary" id="copy">Copy results</button>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>Estimates only. Spreads, commissions, swaps and broker specs change real results. Not financial advice.</footer>
+<script src="js/instruments.js"></script>
+<script src="js/rates.js"></script>
+<script src="js/forex.js"></script>
+</body>
+</html>

@@ -1,25 +1,36 @@
 # Position Size Calculator
 
-A static, offline position sizing tool built with HTML, CSS and vanilla JavaScript. No build step, no network calls.
+Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub Pages.
+
+**Live:** https://breakoutplayer.github.io/position-size-calculator/
+
+## Pages
+- **Crypto** (`index.html`): quantity, position value and margin from capital, risk %, number of trades, leverage, entry/SL/TP. Fees included (Bitunix futures taker 0.06% on entry and exit, editable). Suggests minimum leverage and warns if rough liquidation sits before your stop.
+- **Forex & CFDs** (`forex.html`): lot size for FX majors/crosses, XAUUSD, XAGUSD, US30, NAS100, SPX500, GER40, UK100, JP225, USOIL, UKOIL. SL/TP as prices or pips/points. No fees.
 
 ## Features
-- Risk-based or custom-lot sizing, long and short
-- Six visible asset categories, 60+ editable instruments (crypto is one generic contract), cross-category search
-- Pip, tick and contract-size methods, quote-to-USD conversion (estimate or your override)
-- Margin from leverage, or a margin rate override
-- Risk-to-reward and a partial take-profit calculator
-- Dark/light theme, saved settings, copy trade details
+- 4 themes (Terminal, Glass, Gold, Ocean), each with dark/light mode
+- Remembers your inputs, copy-results button, visual Entry/SL/TP ladder
+- Lots/qty rounded down to step, showing actual risk after rounding
+- Live FX rates from [Frankfurter](https://frankfurter.dev) (free, no key) with manual override
+- Installable PWA, works offline
 
-## Edit instrument specs
-Change values in **Advanced instrument settings** (saved as overrides, with a reset button), or edit the `DEFAULTS` list at the top of `script.js`.
+## Formulas
+**Crypto**
+- risk $ = capital × risk % ÷ trades
+- qty = risk $ ÷ (|entry − SL| + fee × entry + fee × SL), floored to qty step
+- position = qty × entry; margin = position ÷ leverage
 
-## How it calculates
-- Dollar risk = balance x risk % / 100
-- Stop distance must sit on the correct side of entry. The exit price you enter is treated as the stop-loss.
-- Loss per lot = distance x contract size (linear/fx) or distance / tick size x tick value (tick), converted to USD
-- Lots are rounded down to the lot step, never up to the minimum
-- Margin = notional / leverage, unless a margin rate is set
-- Quote-to-USD: exact for USDxxx pairs, otherwise a built-in estimate (`EST_RATES`) that you can override
+**Forex / CFD** (account in USD)
+- risk $ = balance × risk % ÷ trades
+- lots = risk $ ÷ (SL distance × contract size × quote→USD), floored to lot step
+- margin = lots × contract size × price (in USD) ÷ leverage
+
+## Default contract sizes (edit per symbol in the app)
+FX 100,000 · XAUUSD 100 oz · XAGUSD 5,000 oz · indices 1 · oils 1,000 bbl. Brokers differ: verify yours.
+
+## Deploy
+Settings → Pages → Source: *Deploy from a branch* → `main` / `(root)`.
 
 ## Disclaimer
-Default specifications are generic illustrations. Verify contract size, tick value, lot limits and margin with your broker. Results are estimates, not guarantees.
+Estimates only. Not financial advice.

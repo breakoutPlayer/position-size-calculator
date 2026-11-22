@@ -1,0 +1,13 @@
+{
+  "name": "Position Size Calculator",
+  "short_name": "PosSizer",
+  "description": "Crypto, forex, gold, indices and oil position size calculator.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0e12",
+  "theme_color": "#0a0e12",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
