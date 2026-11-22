@@ -5,7 +5,7 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 **Live:** https://breakoutplayer.github.io/position-size-calculator/
 
 ## Pages
-- **Crypto** (`index.html`): quantity, loss at SL, profit at TP and R:R from capital, risk %, number of trades and entry/SL/TP. Fees included (Bitunix futures taker 0.06% on entry and exit, editable). No leverage input: shows the minimum leverage needed and the margin at 5x steps up to 50x, flagging leverage where rough liquidation comes before your stop.
+- **Crypto** (`index.html`): quantity, loss at SL, profit at TP and R:R from capital, risk %, number of trades and entry/SL/TP. Fees included (Bitunix futures taker 0.06% on entry and exit, editable). No leverage input: shows the minimum leverage needed and the margin at 5x steps, stopping at the maximum leverage where rough liquidation is still beyond your stop (capped at 50x).
 - **Forex & CFDs** (`forex.html`): lot size for FX majors/crosses, XAUUSD, XAGUSD, US30, NAS100, SPX500, GER40, UK100, JP225, USOIL, UKOIL. SL/TP as prices or pips/points. No fees.
 
 ## Features

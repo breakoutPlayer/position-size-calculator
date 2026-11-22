@@ -1,12 +1,15 @@
 /* Crypto futures position sizing. */
 'use strict';
 
-// Leverage steps: minimum required, then multiples of 5 up to 50x (or 5 more steps if min is above 50x).
-function leverageSteps(minLev) {
+// Leverage steps: minimum required, then multiples of 5 up to 50x (or 5 more steps if min is above 50x),
+// stopping at maxLev (highest leverage whose rough liquidation is still beyond the stop-loss).
+function leverageSteps(minLev, maxLev) {
   const steps = [minLev];
+  if (maxLev <= minLev) return steps;
   let next = Math.floor(minLev / 5) * 5 + 5;
-  const cap = minLev < 50 ? 50 : next + 20;
+  const cap = Math.min(minLev < 50 ? 50 : next + 20, maxLev);
   for (; next <= cap; next += 5) steps.push(next);
+  if (steps[steps.length - 1] < cap) steps.push(cap);
   return steps;
 }
 
@@ -44,12 +47,14 @@ function calcCrypto(i) {
   }
   const minLev = Math.max(1, Math.ceil(pos / perTradeCap - 1e-9));
   // Rough isolated-margin liquidation: price moves ~1/leverage against you.
-  const levs = leverageSteps(minLev).map(lev => {
+  const maxLev = Math.max(1, Math.ceil(i.entry / dist - 1e-9) - 1); // above this, liquidation hits before SL
+  if (minLev > maxLev) warns.push(`Needs at least ${minLev}x, but above ${maxLev}x you'd likely be liquidated before your stop-loss. Widen the stop, lower risk, or reduce trades.`);
+  const levs = leverageSteps(minLev, maxLev).map(lev => {
     const liq = dir === 'long' ? i.entry * (1 - 1 / lev) : i.entry * (1 + 1 / lev);
     return { lev, margin: pos / lev, liqBeforeSl: dir === 'long' ? liq >= i.sl : liq <= i.sl };
   });
 
-  return { errors, warns, dir, qty, rawQty, pos, perTradeCap, minLev, levs, loss, profit, rr };
+  return { errors, warns, dir, maxLev, qty, rawQty, pos, perTradeCap, minLev, levs, loss, profit, rr };
 }
 
 const ids = ['capital', 'risk', 'trades', 'entry', 'sl', 'tp', 'fee', 'qstep'];
@@ -74,8 +79,9 @@ function render() {
   $('profit').textContent = Number.isFinite(r.profit) ? '+' + fmtUsd(r.profit) : '—';
   $('rr').textContent = Number.isFinite(r.rr) ? `R:R 1 : ${fmtNum(r.rr, 2)}` : 'add a TP';
   $('levRows').innerHTML = r.levs.map((l, n) => {
-    const cls = l.liqBeforeSl ? 'liq' : n === 0 ? 'min' : '';
-    const note = l.liqBeforeSl ? 'liq. before SL' : n === 0 ? 'minimum' : '';
+    const isMax = l.lev === r.maxLev && n > 0;
+    const cls = l.liqBeforeSl ? 'liq' : n === 0 || isMax ? 'min' : '';
+    const note = l.liqBeforeSl ? 'liq. before SL' : n === 0 ? (l.lev === r.maxLev ? 'min = max' : 'minimum') : isMax ? 'maximum' : '';
     return `<tr class="${cls}"><td>${l.lev}x</td><td>${fmtUsd(l.margin)}</td><td>${note}</td></tr>`;
   }).join('');
 }
