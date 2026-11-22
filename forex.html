@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#0a0e12">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/styles.css?v=7">
-<script src="js/common.js?v=7"></script>
+<link rel="stylesheet" href="css/styles.css?v=8">
+<script src="js/common.js?v=8"></script>
 </head>
 <body>
 <nav class="nav">
@@ -46,12 +46,13 @@
       <div class="card">
         <h2>Trade</h2>
         <label style="margin-bottom:.9rem">Instrument<select id="sym" data-save></select></label>
-        <div class="seg" id="modeSeg"><button data-m="price" class="on">Prices</button><button data-m="pips">Pips / points</button></div>
+        <div class="seg" id="modeSeg"><button data-m="price" class="on">Prices</button><button data-m="pips">Pips / points</button><button data-m="pct">SL %</button></div>
         <div class="seg" id="dirSeg" hidden><button data-d="long" class="on">Buy / Long</button><button data-d="short">Sell / Short</button></div>
         <div class="fields">
           <label>Entry price<input id="entry" type="number" min="0" step="any" data-save></label>
           <label class="pm-price">Stop-loss price<input id="sl" type="number" min="0" step="any" data-save></label>
-          <label class="pm-price">Take-profit price<input id="tp" type="number" min="0" step="any" placeholder="optional" data-save></label>
+          <label class="pm-pct" hidden>Stop-loss % from entry<input id="slPct" type="number" min="0" step="any" placeholder="e.g. 0.5" data-save></label>
+          <label class="pm-tp">Take-profit price<input id="tp" type="number" min="0" step="any" placeholder="optional" data-save></label>
           <label class="pm-pips" hidden><span>Stop-loss (<span class="unit">pips</span>)</span><input id="slPips" type="number" min="0" step="any" data-save></label>
           <label class="pm-pips" hidden><span>Take-profit (<span class="unit">pips</span>)</span><input id="tpPips" type="number" min="0" step="any" placeholder="optional" data-save></label>
         </div>
@@ -89,8 +90,8 @@
   </div>
 </main>
 <footer>Estimates only. Spreads, commissions, swaps and broker specs change real results. Not financial advice.</footer>
-<script src="js/instruments.js?v=7"></script>
-<script src="js/rates.js?v=7"></script>
-<script src="js/forex.js?v=7"></script>
+<script src="js/instruments.js?v=8"></script>
+<script src="js/rates.js?v=8"></script>
+<script src="js/forex.js?v=8"></script>
 </body>
 </html>

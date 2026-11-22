@@ -6,7 +6,7 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 
 ## Pages
 - **Crypto** (`index.html`): quantity, loss at SL, profit at TP and R:R from capital, risk %, number of trades and entry/SL/TP. SL can be a price or a % from entry (with long/short toggle). Fees included (Bitunix futures taker 0.06% on entry and exit, editable). No leverage input: shows the minimum leverage needed and the margin at 5x steps, stopping at the maximum leverage where rough liquidation is still beyond your stop.
-- **Forex & CFDs** (`forex.html`): lot size for FX majors/crosses, XAUUSD, XAGUSD, US30, NAS100, SPX500, GER40, UK100, JP225, USOIL, UKOIL. SL/TP as prices or pips/points. No fees.
+- **Forex & CFDs** (`forex.html`): lot size for FX majors/crosses, XAUUSD, XAGUSD, US30, NAS100, SPX500, GER40, UK100, JP225, USOIL, UKOIL. SL/TP as prices, pips/points, or SL as % from entry. No fees.
 
 ## Features
 - 4 themes (Terminal, Glass, Gold, Ocean), each with dark/light mode (default: Terminal dark)

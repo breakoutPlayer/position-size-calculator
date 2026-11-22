@@ -112,10 +112,12 @@ function saveSpec() {
 function syncMode() {
   document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
   document.querySelectorAll('#dirSeg button').forEach(b => b.classList.toggle('on', b.dataset.d === side));
-  $('dirSeg').hidden = mode !== 'pips';
+  $('dirSeg').hidden = mode === 'price';
   document.querySelectorAll('.pm-price').forEach(el => el.hidden = mode !== 'price');
   document.querySelectorAll('.pm-pips').forEach(el => el.hidden = mode !== 'pips');
-  $('modeHint').textContent = mode === 'price'
+  document.querySelectorAll('.pm-pct').forEach(el => el.hidden = mode !== 'pct');
+  document.querySelectorAll('.pm-tp').forEach(el => el.hidden = mode === 'pips');
+  $('modeHint').textContent = mode === 'pct' ? 'Pick long or short, then enter the stop-loss % from entry.' : mode === 'price'
     ? 'Long or short is detected from where your stop-loss sits.'
     : 'Entry price is optional in this mode but needed for margin.';
 }
@@ -125,6 +127,15 @@ function render() {
   const i = { capital: num('capital'), risk: num('risk'), trades: num('trades'), lev: num('lev'),
     entry: num('entry'), sl: num('sl'), tp: num('tp'), slPips: num('slPips'), tpPips: num('tpPips'),
     rate: num('rate'), mode, side };
+  if (mode === 'pct') {
+    // Derive the SL price from entry and % distance, then size as in price mode.
+    const pct = num('slPct');
+    i.sl = i.entry > 0 && pct > 0 && pct < 100 ? i.entry * (1 + (side === 'long' ? -1 : 1) * pct / 100) : NaN;
+    i.mode = 'price';
+    $('modeHint').textContent = Number.isFinite(i.sl)
+      ? `Stop-loss price: ${+i.sl.toFixed(priceDp(i.entry) + 2)}`
+      : 'Pick long or short, then enter entry price and stop-loss % from entry.';
+  }
   const r = calcFx(i, inst);
   last = { i, r, inst };
   $('alerts').innerHTML = r.errors.map(e => `<div class="alert err">${e}</div>`).join('') +
@@ -171,7 +182,7 @@ persistInputs('forex');
 if (!INSTRUMENTS.some(x => x.s === $('sym').value)) $('sym').value = 'EURUSD';
 loadSpecFields(); syncMode();
 
-['capital', 'risk', 'trades', 'lev', 'entry', 'sl', 'tp', 'slPips', 'tpPips'].forEach(k => $(k).addEventListener('input', render));
+['capital', 'risk', 'trades', 'lev', 'entry', 'sl', 'tp', 'slPct', 'slPips', 'tpPips'].forEach(k => $(k).addEventListener('input', render));
 ['cs', 'pip', 'step'].forEach(k => $(k).addEventListener('input', saveSpec));
 $('rate').addEventListener('input', () => { Store.set('rate:' + specOf($('sym').value).quote, $('rate').value); render(); });
 $('sym').addEventListener('change', () => { loadSpecFields(); render(); });
