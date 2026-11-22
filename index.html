@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#0a0e12">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/styles.css?v=6">
-<script src="js/common.js?v=6"></script>
+<link rel="stylesheet" href="css/styles.css?v=7">
+<script src="js/common.js?v=7"></script>
 </head>
 <body>
 <nav class="nav">
@@ -44,12 +44,15 @@
       </div>
       <div class="card">
         <h2>Trade</h2>
+        <div class="seg" id="slModeSeg"><button data-m="price" class="on">SL as price</button><button data-m="pct">SL as % from entry</button></div>
+        <div class="seg" id="sideSeg" hidden><button data-d="long" class="on">Buy / Long</button><button data-d="short">Sell / Short</button></div>
         <div class="fields">
           <label>Entry price<input id="entry" type="number" min="0" step="any" placeholder="e.g. 65000" data-save></label>
-          <label>Stop-loss price<input id="sl" type="number" min="0" step="any" placeholder="e.g. 64000" data-save></label>
+          <label class="sl-price">Stop-loss price<input id="sl" type="number" min="0" step="any" placeholder="e.g. 64000" data-save></label>
+          <label class="sl-pct" hidden>Stop-loss %<input id="slPct" type="number" min="0" step="any" placeholder="e.g. 1.5" data-save></label>
           <label>Take-profit price<input id="tp" type="number" min="0" step="any" placeholder="optional" data-save></label>
         </div>
-        <p class="hint">Long or short is detected automatically from where your stop-loss sits.</p>
+        <p class="hint" id="slHint">Long or short is detected automatically from where your stop-loss sits.</p>
         <details style="margin-top:1rem">
           <summary>Fees &amp; rounding</summary>
           <div class="fields">
@@ -78,6 +81,6 @@
   </div>
 </main>
 <footer>Estimates only. Exchange fees, funding and slippage can change real results. Not financial advice.</footer>
-<script src="js/crypto.js?v=6"></script>
+<script src="js/crypto.js?v=7"></script>
 </body>
 </html>

@@ -57,13 +57,22 @@ function calcCrypto(i) {
   return { errors, warns, dir, maxLev, qty, rawQty, pos, perTradeCap, minLev, levs, loss, profit, rr };
 }
 
-const ids = ['capital', 'risk', 'trades', 'entry', 'sl', 'tp', 'fee', 'qstep'];
+const ids = ['capital', 'risk', 'trades', 'entry', 'sl', 'slPct', 'tp', 'fee', 'qstep'];
+let slMode = Store.get('cryptoSlMode', 'price');
+let side = Store.get('cryptoSide', 'long');
 const $ = (id) => document.getElementById(id);
 let last = null;
 
 function render() {
   const i = Object.fromEntries(ids.map(k => [k, num(k)]));
+  if (slMode === 'pct') {
+    // Derive the SL price from entry and % distance, on the side chosen.
+    i.sl = i.entry > 0 && i.slPct > 0 && i.slPct < 100 ? i.entry * (1 + (side === 'long' ? -1 : 1) * i.slPct / 100) : NaN;
+  }
   const r = calcCrypto(i);
+  $('slHint').textContent = slMode === 'pct'
+    ? (Number.isFinite(i.sl) ? `Stop-loss price: ${+i.sl.toFixed(priceDp(i.entry) + 2)}` : 'Pick long or short, then enter the stop-loss % from entry.')
+    : 'Long or short is detected automatically from where your stop-loss sits.';
   last = { i, r };
   $('alerts').innerHTML = r.errors.map(e => `<div class="alert err">${e}</div>`).join('') +
     (r.warns || []).map(w => `<div class="alert warn">⚠ ${w}</div>`).join('');
@@ -90,11 +99,26 @@ $('copy').addEventListener('click', () => {
   if (!last || last.r.errors.length) return toast('Nothing to copy yet');
   const { i, r } = last;
   copyText([
-    `${r.dir.toUpperCase()} | Entry ${i.entry} | SL ${i.sl}${i.tp > 0 ? ' | TP ' + i.tp : ''}`,
+    `${r.dir.toUpperCase()} | Entry ${i.entry} | SL ${+i.sl.toFixed(priceDp(i.entry) + 2)}${slMode === "pct" ? ` (${i.slPct}%)` : ""}${i.tp > 0 ? ' | TP ' + i.tp : ''}`,
     `Qty: ${r.qty}`, `Min leverage: ${r.minLev}x (margin ${fmtUsd(r.pos / r.minLev)})`,
     `Loss at SL: -${fmtUsd(r.loss)}` + (Number.isFinite(r.profit) ? ` | Profit at TP: +${fmtUsd(r.profit)} | R:R 1:${fmtNum(r.rr, 2)}` : ''),
   ].join('\n'));
 });
+
+function syncSlMode() {
+  document.querySelectorAll('#slModeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === slMode));
+  document.querySelectorAll('#sideSeg button').forEach(b => b.classList.toggle('on', b.dataset.d === side));
+  $('sideSeg').hidden = slMode !== 'pct';
+  document.querySelector('.sl-price').hidden = slMode !== 'price';
+  document.querySelector('.sl-pct').hidden = slMode !== 'pct';
+}
+document.querySelectorAll('#slModeSeg button').forEach(b => b.addEventListener('click', () => {
+  slMode = b.dataset.m; Store.set('cryptoSlMode', slMode); syncSlMode(); render();
+}));
+document.querySelectorAll('#sideSeg button').forEach(b => b.addEventListener('click', () => {
+  side = b.dataset.d; Store.set('cryptoSide', side); syncSlMode(); render();
+}));
+syncSlMode();
 
 persistInputs('crypto');
 ids.forEach(k => $(k).addEventListener('input', render));
