@@ -1,13 +1,13 @@
 /* Crypto futures position sizing. */
 'use strict';
 
-// Leverage steps: minimum required, then multiples of 5 up to 50x (or 5 more steps if min is above 50x),
+// Leverage steps: minimum required, then multiples of 5,
 // stopping at maxLev (highest leverage whose rough liquidation is still beyond the stop-loss).
 function leverageSteps(minLev, maxLev) {
   const steps = [minLev];
   if (maxLev <= minLev) return steps;
   let next = Math.floor(minLev / 5) * 5 + 5;
-  const cap = Math.min(minLev < 50 ? 50 : next + 20, maxLev);
+  const cap = maxLev;
   for (; next <= cap; next += 5) steps.push(next);
   if (steps[steps.length - 1] < cap) steps.push(cap);
   return steps;
