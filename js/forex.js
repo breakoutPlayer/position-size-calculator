@@ -117,7 +117,7 @@ function syncMode() {
   document.querySelectorAll('.pm-pips').forEach(el => el.hidden = mode !== 'pips');
   $('modeHint').textContent = mode === 'price'
     ? 'Long or short is detected from where your stop-loss sits.'
-    : 'Entry price is optional in this mode but needed for margin and the price ladder.';
+    : 'Entry price is optional in this mode but needed for margin.';
 }
 
 function render() {
@@ -134,30 +134,23 @@ function render() {
     : `1 ${inst.quote} = ${Number.isFinite(q.v) ? fmtNum(q.v, 6) : '?'} USD — ${q.src}`;
   $('rate').placeholder = Number.isFinite(q.v) && !(i.rate > 0) ? 'auto ' + fmtNum(q.v, 6) : 'auto';
 
-  const keys = ['lots', 'margin', 'loss', 'riskUsd', 'profit', 'rr', 'slDist', 'pipVal', 'units', 'notional', 'marginAll'];
+  const keys = ['lots', 'margin', 'loss', 'profit', 'rr'];
   if (r.errors.length) {
     keys.forEach(k => $(k).textContent = '—');
-    ['lotsSub', 'marginSub', 'lossSub'].forEach(k => $(k).textContent = '');
-    $('dir').innerHTML = ''; $('ladder').innerHTML = '';
+    ['lotsSub', 'marginSub', 'lossSub', 'profitSub'].forEach(k => $(k).textContent = '');
+    $('dir').innerHTML = '';
     return;
   }
-  const unitsTxt = inst.unit;
   $('dir').innerHTML = `<span class="badge ${r.dir}">${r.dir.toUpperCase()}</span>`;
   $('lots').textContent = fmtNum(r.lots, 2);
-  $('lotsSub').textContent = `exact ${fmtNum(r.rawLots, 4)} → rounded down to ${inst.step}`;
+  $('lotsSub').textContent = `SL ${fmtNum(r.dist / inst.pip, 1)} ${inst.unit}`;
   $('margin').textContent = fmtUsd(r.margin);
-  $('marginSub').textContent = `1:${i.lev} leverage`;
+  $('marginSub').textContent = `1:${i.lev}`;
   $('loss').textContent = '-' + fmtUsd(r.loss);
   $('lossSub').textContent = `${fmtNum(r.loss / i.capital * 100, 2)}% of balance`;
-  $('riskUsd').textContent = fmtUsd(r.riskUsd);
   $('profit').textContent = Number.isFinite(r.profit) ? '+' + fmtUsd(r.profit) : '—';
+  $('profitSub').textContent = Number.isFinite(r.profit) ? '' : 'add a TP';
   $('rr').textContent = Number.isFinite(r.rr) ? `1 : ${fmtNum(r.rr, 2)}` : '—';
-  $('slDist').textContent = `${fmtNum(r.dist / inst.pip, 1)} ${unitsTxt} (${fmtNum(r.dist, 6)})`;
-  $('pipVal').textContent = fmtUsd(r.pipVal);
-  $('units').textContent = fmtNum(r.units, 2);
-  $('notional').textContent = fmtUsd(r.notional);
-  $('marginAll').textContent = Number.isFinite(r.marginAll) ? `${fmtUsd(r.marginAll)} (${i.trades} × trade)` : '—';
-  renderLadder($('ladder'), i.entry, r.sl, r.tp);
 }
 
 $('copy').addEventListener('click', () => {

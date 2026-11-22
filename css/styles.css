@@ -181,3 +181,14 @@ footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 0 
   .mbar .v2 { font: 600 .85rem var(--mono); text-align: right; }
   .mbar.hide { opacity: 0; pointer-events: none; }
 }
+
+/* Leverage table */
+.levtable { width: 100%; border-collapse: collapse; font-family: var(--mono); }
+.levtable th { text-align: left; font: 700 .7rem var(--font); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; padding: 0 .6rem .4rem; }
+.levtable td { padding: .55rem .6rem; border-top: 1px solid var(--card-border); font-weight: 600; }
+.levtable td:nth-child(2) { text-align: right; }
+.levtable th:nth-child(2) { text-align: right; }
+.levtable td:last-child { text-align: right; font: 600 .72rem var(--font); color: var(--muted); }
+.levtable tr.min td { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.levtable tr.min td:first-child { border-radius: 8px 0 0 8px; } .levtable tr.min td:last-child { border-radius: 0 8px 8px 0; color: var(--accent); }
+.levtable tr.liq td { color: var(--down); }

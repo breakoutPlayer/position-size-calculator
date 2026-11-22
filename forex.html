@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#0a0e12">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/styles.css?v=3">
-<script src="js/common.js?v=3"></script>
+<link rel="stylesheet" href="css/styles.css?v=4">
+<script src="js/common.js?v=4"></script>
 </head>
 <body>
 <nav class="nav">
@@ -80,26 +80,17 @@
           <div class="stat main"><div class="k">Lot size</div><div class="v" id="lots">—</div><div class="s" id="lotsSub"></div></div>
           <div class="stat"><div class="k">Margin</div><div class="v" id="margin">—</div><div class="s" id="marginSub"></div></div>
           <div class="stat"><div class="k">Loss at SL</div><div class="v down" id="loss">—</div><div class="s" id="lossSub"></div></div>
+          <div class="stat"><div class="k">Profit at TP</div><div class="v up" id="profit">—</div><div class="s" id="profitSub"></div></div>
+          <div class="stat"><div class="k">Risk : Reward</div><div class="v" id="rr">—</div><div class="s"></div></div>
         </div>
-        <div class="ladder" id="ladder"></div>
-        <dl class="rows">
-          <dt>Risk per trade (target)</dt><dd id="riskUsd">—</dd>
-          <dt>Profit at TP</dt><dd id="profit" class="up">—</dd>
-          <dt>Risk : Reward</dt><dd id="rr">—</dd>
-          <dt>Stop-loss distance</dt><dd id="slDist">—</dd>
-          <dt><span class="unit">Pip</span> value per 1.0 lot</dt><dd id="pipVal">—</dd>
-          <dt>Units / contracts</dt><dd id="units">—</dd>
-          <dt>Position value</dt><dd id="notional">—</dd>
-          <dt>Margin for all trades</dt><dd id="marginAll">—</dd>
-        </dl>
         <button class="btn primary" id="copy">Copy results</button>
       </div>
     </section>
   </div>
 </main>
 <footer>Estimates only. Spreads, commissions, swaps and broker specs change real results. Not financial advice.</footer>
-<script src="js/instruments.js?v=3"></script>
-<script src="js/rates.js?v=3"></script>
-<script src="js/forex.js?v=3"></script>
+<script src="js/instruments.js?v=4"></script>
+<script src="js/rates.js?v=4"></script>
+<script src="js/forex.js?v=4"></script>
 </body>
 </html>

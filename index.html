@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#0a0e12">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/styles.css?v=3">
-<script src="js/common.js?v=3"></script>
+<link rel="stylesheet" href="css/styles.css?v=4">
+<script src="js/common.js?v=4"></script>
 </head>
 <body>
 <nav class="nav">
@@ -39,7 +39,6 @@
           <label>Capital (USDT)<input id="capital" type="number" min="0" step="any" value="1000" data-save></label>
           <label>Risk %<input id="risk" type="number" min="0" step="any" value="2" data-save></label>
           <label>Number of trades<input id="trades" type="number" min="1" step="1" value="1" data-save></label>
-          <label>Leverage (x)<input id="lev" type="number" min="1" step="any" value="10" data-save></label>
         </div>
         <p class="hint">Risk per trade = capital × risk % ÷ number of trades.</p>
       </div>
@@ -68,26 +67,17 @@
         <div id="alerts"></div>
         <div class="hero">
           <div class="stat main"><div class="k">Quantity (coins)</div><div class="v" id="qty">—</div><div class="s" id="qtySub"></div></div>
-          <div class="stat"><div class="k">Margin</div><div class="v" id="margin">—</div><div class="s" id="marginSub"></div></div>
-          <div class="stat"><div class="k">Position value</div><div class="v" id="pos">—</div><div class="s" id="posSub"></div></div>
+          <div class="stat"><div class="k">Loss at SL</div><div class="v down" id="loss">—</div><div class="s">incl. fees</div></div>
+          <div class="stat"><div class="k">Profit at TP</div><div class="v up" id="profit">—</div><div class="s" id="rr"></div></div>
         </div>
-        <div class="ladder" id="ladder"></div>
-        <dl class="rows">
-          <dt>Risk per trade (target)</dt><dd id="riskUsd">—</dd>
-          <dt>Loss at SL incl. fees</dt><dd id="loss" class="down">—</dd>
-          <dt>Profit at TP after fees</dt><dd id="profit" class="up">—</dd>
-          <dt>Risk : Reward</dt><dd id="rr">—</dd>
-          <dt>SL distance</dt><dd id="slDist">—</dd>
-          <dt>Total fees (round trip at SL)</dt><dd id="fees">—</dd>
-          <dt>Margin for all trades</dt><dd id="marginAll">—</dd>
-          <dt>Min. leverage suggested</dt><dd id="minLev">—</dd>
-        </dl>
+        <h2 style="margin-top:1.25rem">Leverage &amp; margin</h2>
+        <table class="levtable"><thead><tr><th>Leverage</th><th>Margin</th><th></th></tr></thead><tbody id="levRows"></tbody></table>
         <button class="btn primary" id="copy">Copy results</button>
       </div>
     </section>
   </div>
 </main>
 <footer>Estimates only. Exchange fees, funding and slippage can change real results. Not financial advice.</footer>
-<script src="js/crypto.js?v=3"></script>
+<script src="js/crypto.js?v=4"></script>
 </body>
 </html>

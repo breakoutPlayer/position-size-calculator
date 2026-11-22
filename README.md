@@ -5,12 +5,12 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 **Live:** https://breakoutplayer.github.io/position-size-calculator/
 
 ## Pages
-- **Crypto** (`index.html`): quantity, position value and margin from capital, risk %, number of trades, leverage, entry/SL/TP. Fees included (Bitunix futures taker 0.06% on entry and exit, editable). Suggests minimum leverage and warns if rough liquidation sits before your stop.
+- **Crypto** (`index.html`): quantity, loss at SL, profit at TP and R:R from capital, risk %, number of trades and entry/SL/TP. Fees included (Bitunix futures taker 0.06% on entry and exit, editable). No leverage input: shows the minimum leverage needed and the margin at 5x steps up to 50x, flagging leverage where rough liquidation comes before your stop.
 - **Forex & CFDs** (`forex.html`): lot size for FX majors/crosses, XAUUSD, XAGUSD, US30, NAS100, SPX500, GER40, UK100, JP225, USOIL, UKOIL. SL/TP as prices or pips/points. No fees.
 
 ## Features
-- 4 themes (Terminal, Glass, Gold, Ocean), each with dark/light mode
-- Remembers your inputs, copy-results button, visual Entry/SL/TP ladder
+- 4 themes (Terminal, Glass, Gold, Ocean), each with dark/light mode (default: Terminal dark)
+- Remembers your inputs, copy-results button
 - Lots/qty rounded down to step, showing actual risk after rounding
 - Live FX rates from [Frankfurter](https://frankfurter.dev) (free, no key) with manual override
 - Installable PWA, works offline
@@ -19,7 +19,7 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 **Crypto**
 - risk $ = capital × risk % ÷ trades
 - qty = risk $ ÷ (|entry − SL| + fee × entry + fee × SL), floored to qty step
-- position = qty × entry; margin = position ÷ leverage
+- position = qty × entry; min leverage = ceil(position ÷ (capital ÷ trades)); margin = position ÷ leverage
 
 **Forex / CFD** (account in USD)
 - risk $ = balance × risk % ÷ trades

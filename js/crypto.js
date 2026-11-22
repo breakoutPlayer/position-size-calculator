@@ -1,13 +1,21 @@
 /* Crypto futures position sizing. */
 'use strict';
 
+// Leverage steps: minimum required, then multiples of 5 up to 50x (or 5 more steps if min is above 50x).
+function leverageSteps(minLev) {
+  const steps = [minLev];
+  let next = Math.floor(minLev / 5) * 5 + 5;
+  const cap = minLev < 50 ? 50 : next + 20;
+  for (; next <= cap; next += 5) steps.push(next);
+  return steps;
+}
+
 // Pure calculation (no DOM)
 function calcCrypto(i) {
   const errors = [], warns = [];
   if (!(i.capital > 0)) errors.push('Capital must be above zero.');
   if (!(i.risk > 0)) errors.push('Risk % must be above zero.');
   if (!(i.trades >= 1)) errors.push('Number of trades must be at least 1.');
-  if (!(i.lev >= 1)) errors.push('Leverage must be at least 1.');
   if (!(i.entry > 0) || !(i.sl > 0)) errors.push('Enter entry and stop-loss prices.');
   else if (i.entry === i.sl) errors.push('Entry and stop-loss cannot be equal.');
   if (errors.length) return { errors, warns };
@@ -26,9 +34,7 @@ function calcCrypto(i) {
   if (errors.length) return { errors, warns };
 
   const pos = qty * i.entry;
-  const margin = pos / i.lev;
   const perTradeCap = i.capital / i.trades;
-  const fees = qty * fee * (i.entry + i.sl);
   const loss = qty * lossPerCoin;
   let profit = NaN, rr = NaN;
   const tpValid = i.tp > 0 && (dir === 'long' ? i.tp > i.entry : i.tp < i.entry);
@@ -36,18 +42,17 @@ function calcCrypto(i) {
     profit = qty * Math.abs(i.tp - i.entry) - qty * fee * (i.entry + i.tp);
     rr = Math.abs(i.tp - i.entry) / dist;
   }
-  const minLev = Math.ceil(pos / perTradeCap * 100) / 100;
-  if (margin > perTradeCap)
-    warns.push(`Margin ${fmtUsd(margin)} exceeds capital per trade ${fmtUsd(perTradeCap)}. Use at least ${Math.ceil(minLev)}x leverage.`);
-  const liqApprox = dir === 'long' ? i.entry * (1 - 1 / i.lev) : i.entry * (1 + 1 / i.lev);
-  if (dir === 'long' ? liqApprox >= i.sl : liqApprox <= i.sl)
-    warns.push(`At ${i.lev}x, rough liquidation (~${fmtNum(liqApprox, priceDp(i.entry))}) is before your stop-loss. Lower leverage.`);
+  const minLev = Math.max(1, Math.ceil(pos / perTradeCap - 1e-9));
+  // Rough isolated-margin liquidation: price moves ~1/leverage against you.
+  const levs = leverageSteps(minLev).map(lev => {
+    const liq = dir === 'long' ? i.entry * (1 - 1 / lev) : i.entry * (1 + 1 / lev);
+    return { lev, margin: pos / lev, liqBeforeSl: dir === 'long' ? liq >= i.sl : liq <= i.sl };
+  });
 
-  return { errors, warns, dir, riskUsd, dist, distPct: dist / i.entry * 100, qty, rawQty, pos, margin,
-    marginAll: margin * i.trades, perTradeCap, minLev, fees, loss, profit, rr };
+  return { errors, warns, dir, qty, rawQty, pos, perTradeCap, minLev, levs, loss, profit, rr };
 }
 
-const ids = ['capital', 'risk', 'trades', 'lev', 'entry', 'sl', 'tp', 'fee', 'qstep'];
+const ids = ['capital', 'risk', 'trades', 'entry', 'sl', 'tp', 'fee', 'qstep'];
 const $ = (id) => document.getElementById(id);
 let last = null;
 
@@ -57,31 +62,22 @@ function render() {
   last = { i, r };
   $('alerts').innerHTML = r.errors.map(e => `<div class="alert err">${e}</div>`).join('') +
     (r.warns || []).map(w => `<div class="alert warn">⚠ ${w}</div>`).join('');
-  const blank = ['qty', 'margin', 'pos', 'riskUsd', 'loss', 'profit', 'rr', 'slDist', 'fees', 'marginAll', 'minLev'];
   if (r.errors.length) {
-    blank.forEach(k => $(k).textContent = '—');
-    ['qtySub', 'marginSub', 'posSub'].forEach(k => $(k).textContent = '');
-    $('dir').innerHTML = ''; $('ladder').innerHTML = '';
+    ['qty', 'loss', 'profit'].forEach(k => $(k).textContent = '—');
+    $('qtySub').textContent = ''; $('rr').textContent = ''; $('dir').innerHTML = ''; $('levRows').innerHTML = '';
     return;
   }
   $('dir').innerHTML = `<span class="badge ${r.dir}">${r.dir.toUpperCase()}</span>`;
   $('qty').textContent = fmtNum(r.qty, 8);
-  $('qtySub').textContent = r.qty !== r.rawQty ? `exact ${fmtNum(r.rawQty, 8)} → rounded down` : '';
-  $('margin').textContent = fmtUsd(r.margin);
-  $('marginSub').textContent = `${fmtNum(r.margin / r.perTradeCap * 100, 1)}% of capital per trade`;
-  $('pos').textContent = fmtUsd(r.pos);
-  $('posSub').textContent = `${i.lev}x leverage`;
-  $('riskUsd').textContent = fmtUsd(r.riskUsd);
+  $('qtySub').textContent = `${fmtUsd(r.pos)} position`;
   $('loss').textContent = '-' + fmtUsd(r.loss);
   $('profit').textContent = Number.isFinite(r.profit) ? '+' + fmtUsd(r.profit) : '—';
-  $('rr').textContent = Number.isFinite(r.rr) ? `1 : ${fmtNum(r.rr, 2)}` : '—';
-  $('slDist').textContent = `${fmtNum(r.dist, priceDp(i.entry))} (${fmtNum(r.distPct, 2)}%)`;
-  $('fees').textContent = fmtUsd(r.fees);
-  $('marginAll').textContent = `${fmtUsd(r.marginAll)} (${i.trades} × trade)`;
-  const minLevEl = $('minLev');
-  minLevEl.textContent = r.minLev <= 1 ? '1x (no leverage needed)' : `${Math.ceil(r.minLev)}x`;
-  minLevEl.className = r.margin > r.perTradeCap ? 'down' : '';
-  renderLadder($('ladder'), i.entry, i.sl, i.tp);
+  $('rr').textContent = Number.isFinite(r.rr) ? `R:R 1 : ${fmtNum(r.rr, 2)}` : 'add a TP';
+  $('levRows').innerHTML = r.levs.map((l, n) => {
+    const cls = l.liqBeforeSl ? 'liq' : n === 0 ? 'min' : '';
+    const note = l.liqBeforeSl ? 'liq. before SL' : n === 0 ? 'minimum' : '';
+    return `<tr class="${cls}"><td>${l.lev}x</td><td>${fmtUsd(l.margin)}</td><td>${note}</td></tr>`;
+  }).join('');
 }
 
 $('copy').addEventListener('click', () => {
@@ -89,7 +85,7 @@ $('copy').addEventListener('click', () => {
   const { i, r } = last;
   copyText([
     `${r.dir.toUpperCase()} | Entry ${i.entry} | SL ${i.sl}${i.tp > 0 ? ' | TP ' + i.tp : ''}`,
-    `Qty: ${r.qty}`, `Position: ${fmtUsd(r.pos)} @ ${i.lev}x`, `Margin: ${fmtUsd(r.margin)}`,
+    `Qty: ${r.qty}`, `Min leverage: ${r.minLev}x (margin ${fmtUsd(r.pos / r.minLev)})`,
     `Loss at SL: -${fmtUsd(r.loss)}` + (Number.isFinite(r.profit) ? ` | Profit at TP: +${fmtUsd(r.profit)} | R:R 1:${fmtNum(r.rr, 2)}` : ''),
   ].join('\n'));
 });
@@ -97,4 +93,4 @@ $('copy').addEventListener('click', () => {
 persistInputs('crypto');
 ids.forEach(k => $(k).addEventListener('input', render));
 render();
-initMobileBar('Quantity', 'qty', [['Margin', 'margin'], ['Loss', 'loss']]);
+initMobileBar('Quantity', 'qty', [['Loss', 'loss'], ['Profit', 'profit']]);

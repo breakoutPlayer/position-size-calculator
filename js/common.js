@@ -13,7 +13,7 @@ const Store = {
 (function applyTheme() {
   const root = document.documentElement;
   root.dataset.theme = Store.get('theme', 'terminal');
-  root.dataset.mode = Store.get('mode', window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  root.dataset.mode = Store.get('mode', 'dark');
 })();
 
 function initThemeControls() {
