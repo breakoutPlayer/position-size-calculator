@@ -97,3 +97,4 @@ $('copy').addEventListener('click', () => {
 persistInputs('crypto');
 ids.forEach(k => $(k).addEventListener('input', render));
 render();
+initMobileBar('Quantity', 'qty', [['Margin', 'margin'], ['Loss', 'loss']]);

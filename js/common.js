@@ -76,7 +76,7 @@ function renderLadder(el, entry, sl, tp) {
   if (!(entry > 0 && sl > 0)) { el.innerHTML = ''; return; }
   const pts = [entry, sl]; if (tp > 0) pts.push(tp);
   const lo = Math.min(...pts), hi = Math.max(...pts), span = hi - lo || 1;
-  const pos = (p) => 6 + (p - lo) / span * 88; // % with padding
+  const pos = (p) => 14 + (p - lo) / span * 72; // % with padding so edge labels fit
   const dp = priceDp(entry);
   const bar = (a, b, cls) => `<div class="bar ${cls}" style="left:${Math.min(pos(a), pos(b))}%;width:${Math.abs(pos(a) - pos(b))}%"></div>`;
   let html = bar(entry, sl, 'loss');
@@ -90,4 +90,21 @@ function renderLadder(el, entry, sl, tp) {
 document.addEventListener('DOMContentLoaded', initThemeControls);
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+// Mobile bottom bar: mirrors main result; tap scrolls to results; hides when results are visible.
+function initMobileBar(label, mainId, subIds) {
+  const res = document.getElementById(mainId).closest('.card');
+  const bar = document.createElement('button');
+  bar.className = 'mbar'; bar.type = 'button';
+  bar.innerHTML = `<div><div class="k">${label}</div><div class="v"></div></div><div class="v2"></div>`;
+  document.body.appendChild(bar);
+  const sync = () => {
+    bar.querySelector('.v').textContent = document.getElementById(mainId).textContent;
+    bar.querySelector('.v2').innerHTML = subIds.map(([k, id]) => `${k} ${document.getElementById(id).textContent}`).join('<br>');
+  };
+  new MutationObserver(sync).observe(res, { subtree: true, childList: true, characterData: true });
+  bar.addEventListener('click', () => res.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  new IntersectionObserver(([e]) => bar.classList.toggle('hide', e.isIntersecting), { threshold: 0.05 }).observe(res);
+  sync();
 }

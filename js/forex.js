@@ -189,3 +189,4 @@ document.querySelectorAll('#dirSeg button').forEach(b => b.addEventListener('cli
 
 render();
 loadRates().then(r => { if (r) { rates = r; render(); } });
+initMobileBar('Lot size', 'lots', [['Margin', 'margin'], ['Loss', 'loss']]);
