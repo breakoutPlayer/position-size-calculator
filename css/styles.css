@@ -189,6 +189,6 @@ body {
 @media (max-width: 640px) { .mbar { border: 1px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; } }
 
 /* Main number (qty / lots): warm amber, complementary to the green theme. Not red, so it can't be read as a loss. */
-:root { --hero: #c86a12; }
-[data-mode="dark"] { --hero: #f2b25c; }
+:root { --hero: #8f6234; }
+[data-mode="dark"] { --hero: #e3c59c; }
 .stat.main .v, .mbar .v { background: none; color: var(--hero); }
