@@ -188,7 +188,5 @@ body {
 .levtable tr.min td { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 @media (max-width: 640px) { .mbar { border: 1px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; } }
 
-/* Main number (qty / lots): warm amber, complementary to the green theme. Not red, so it can't be read as a loss. */
-:root { --hero: #8f6234; }
-[data-mode="dark"] { --hero: #e3c59c; }
-.stat.main .v, .mbar .v { background: none; color: var(--hero); }
+/* Main number (qty / lots): plain text color; its size alone makes it stand out. */
+.stat.main .v, .mbar .v { background: none; color: var(--text); }
