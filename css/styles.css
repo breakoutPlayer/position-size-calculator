@@ -4,13 +4,13 @@
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: var(--font);
   --bg: #f5f6f8; --bg2: #f5f6f8; --card: #ffffff; --card-border: #e3e6eb;
-  --text: #24292f; --muted: #6b7280; --accent: #4c6ef5; --accent2: #4c6ef5;
-  --up: #2b9a66; --down: #d0505c; --input: #f8f9fb; --glow: rgba(76, 110, 245, .14);
+  --text: #24292f; --muted: #6b7280; --accent: #1f9a74; --accent2: #1f9a74;
+  --up: #2b9a66; --down: #d0505c; --input: #f8f9fb; --glow: rgba(31, 154, 116, .16);
 }
 [data-mode="dark"] {
   --bg: #16191f; --bg2: #16191f; --card: #1d2129; --card-border: #2b303a;
-  --text: #e4e7ec; --muted: #9199a6; --accent: #7b93f6; --accent2: #7b93f6;
-  --up: #5cc493; --down: #ec7a82; --input: #191c23; --glow: rgba(123, 147, 246, .18);
+  --text: #e4e7ec; --muted: #9199a6; --accent: #5cc8a2; --accent2: #5cc8a2;
+  --up: #5cc493; --down: #ec7a82; --input: #191c23; --glow: rgba(92, 200, 162, .18);
 }
 
 /* ===== Base ===== */
@@ -155,13 +155,13 @@ footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 0 
 
 /* ===== Soft gradient layer (kept low-saturation so it stays easy on the eyes) ===== */
 :root {
-  --grad: linear-gradient(135deg, #5b7cfa 0%, #8a6cf0 100%);
-  --wash-1: rgba(91, 124, 250, .10); --wash-2: rgba(56, 189, 168, .08); --wash-3: rgba(138, 108, 240, .08);
+  --grad: linear-gradient(135deg, #2fae7f 0%, #1f9a9a 100%);
+  --wash-1: rgba(47, 174, 127, .10); --wash-2: rgba(31, 154, 154, .07); --wash-3: rgba(120, 190, 90, .06);
   --card: rgba(255, 255, 255, .82); --nav-bg: rgba(245, 246, 248, .72);
 }
 [data-mode="dark"] {
-  --grad: linear-gradient(135deg, #7b93f6 0%, #a48cf4 100%);
-  --wash-1: rgba(123, 147, 246, .10); --wash-2: rgba(72, 190, 170, .06); --wash-3: rgba(164, 140, 244, .08);
+  --grad: linear-gradient(135deg, #5cc8a2 0%, #4ab3b3 100%);
+  --wash-1: rgba(92, 200, 162, .09); --wash-2: rgba(74, 179, 179, .06); --wash-3: rgba(140, 200, 110, .05);
   --card: rgba(29, 33, 41, .82); --nav-bg: rgba(22, 25, 31, .72);
 }
 body {
@@ -185,5 +185,5 @@ body {
 .copy-chip { border: 0; background: var(--grad); color: #fff; box-shadow: 0 2px 8px -2px var(--glow); }
 .copy-chip:hover { background: var(--grad); filter: brightness(1.08); }
 .tabs a.active, .seg button.on { background: var(--grad); color: #fff; box-shadow: 0 2px 8px -2px var(--glow); }
-.levtable tr.min td { background: color-mix(in srgb, #8a6cf0 9%, transparent); }
+.levtable tr.min td { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 @media (max-width: 640px) { .mbar { border: 1px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; } }
