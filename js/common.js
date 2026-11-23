@@ -12,20 +12,16 @@ const Store = {
 // Apply theme early (script loaded in <head>) to avoid a flash.
 (function applyTheme() {
   const root = document.documentElement;
-  root.dataset.theme = Store.get('theme', 'terminal');
   root.dataset.mode = Store.get('mode', 'dark');
 })();
 
 function initThemeControls() {
   const root = document.documentElement;
-  const sw = document.querySelectorAll('.swatch');
   const mode = document.getElementById('modeBtn');
   const sync = () => {
-    sw.forEach(b => b.classList.toggle('on', b.dataset.t === root.dataset.theme));
     mode.textContent = root.dataset.mode === 'dark' ? '☀' : '☾';
     mode.title = root.dataset.mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
   };
-  sw.forEach(b => b.addEventListener('click', () => { root.dataset.theme = b.dataset.t; Store.set('theme', b.dataset.t); sync(); }));
   mode.addEventListener('click', () => {
     root.dataset.mode = root.dataset.mode === 'dark' ? 'light' : 'dark';
     Store.set('mode', root.dataset.mode); sync();

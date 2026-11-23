@@ -9,7 +9,7 @@ Free, static position sizing site (plain HTML/CSS/JS, no build) hosted on GitHub
 - **Forex & CFDs** (`forex.html`): lot size for FX majors/crosses, XAUUSD, XAGUSD, US30, NAS100, SPX500, GER40, UK100, JP225, USOIL, UKOIL. SL/TP as prices, pips/points, or SL as % from entry. No fees.
 
 ## Features
-- 4 themes (Terminal, Glass, Gold, Ocean), each with dark/light mode (default: Terminal dark)
+- One calm theme with a light/dark toggle (default: dark)
 - Remembers your inputs, one-tap copy of qty, $ position (crypto) or lots (forex)
 - Lots/qty rounded down to step, showing actual risk after rounding
 - Live FX rates from [Frankfurter](https://frankfurter.dev) (free, no key) with manual override

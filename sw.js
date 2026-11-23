@@ -1,7 +1,7 @@
 /* Offline cache. Bump VERSION when files change. */
-const VERSION = 'psc-v9';
-const FILES = ['./', 'index.html', 'forex.html', 'css/styles.css?v=9', 'js/common.js?v=9', 'js/crypto.js?v=9',
-  'js/forex.js?v=9', 'js/instruments.js?v=9', 'js/rates.js?v=9', 'manifest.json', 'icons/icon.svg'];
+const VERSION = 'psc-v10';
+const FILES = ['./', 'index.html', 'forex.html', 'css/styles.css?v=10', 'js/common.js?v=10', 'js/crypto.js?v=10',
+  'js/forex.js?v=10', 'js/instruments.js?v=10', 'js/rates.js?v=10', 'manifest.json', 'icons/icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
