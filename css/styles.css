@@ -152,3 +152,38 @@ footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 0 
   border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
 .copy-chip:hover { background: var(--accent); color: #fff; }
 .copy-chip:active { transform: translateY(1px); }
+
+/* ===== Soft gradient layer (kept low-saturation so it stays easy on the eyes) ===== */
+:root {
+  --grad: linear-gradient(135deg, #5b7cfa 0%, #8a6cf0 100%);
+  --wash-1: rgba(91, 124, 250, .10); --wash-2: rgba(56, 189, 168, .08); --wash-3: rgba(138, 108, 240, .08);
+  --card: rgba(255, 255, 255, .82); --nav-bg: rgba(245, 246, 248, .72);
+}
+[data-mode="dark"] {
+  --grad: linear-gradient(135deg, #7b93f6 0%, #a48cf4 100%);
+  --wash-1: rgba(123, 147, 246, .10); --wash-2: rgba(72, 190, 170, .06); --wash-3: rgba(164, 140, 244, .08);
+  --card: rgba(29, 33, 41, .82); --nav-bg: rgba(22, 25, 31, .72);
+}
+body {
+  background:
+    radial-gradient(900px 520px at 0% 0%, var(--wash-1), transparent 70%),
+    radial-gradient(800px 520px at 100% 20%, var(--wash-3), transparent 70%),
+    radial-gradient(900px 600px at 50% 110%, var(--wash-2), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+.nav { background: var(--nav-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.card { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.brand .logo { background: var(--grad); }
+.page-head h1 { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; width: fit-content; }
+.stat.main {
+  border: 1px solid transparent;
+  background: linear-gradient(color-mix(in srgb, var(--accent) 7%, var(--card)), color-mix(in srgb, var(--accent) 7%, var(--card))) padding-box,
+              var(--grad) border-box;
+}
+.stat.main .v { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; width: fit-content; }
+.copy-chip { border: 0; background: var(--grad); color: #fff; box-shadow: 0 2px 8px -2px var(--glow); }
+.copy-chip:hover { background: var(--grad); filter: brightness(1.08); }
+.tabs a.active, .seg button.on { background: var(--grad); color: #fff; box-shadow: 0 2px 8px -2px var(--glow); }
+.levtable tr.min td { background: color-mix(in srgb, #8a6cf0 9%, transparent); }
+@media (max-width: 640px) { .mbar { border: 1px solid transparent; background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; } }
