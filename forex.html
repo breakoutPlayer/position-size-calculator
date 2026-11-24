@@ -8,12 +8,13 @@
 <meta name="theme-color" content="#16191f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/styles.css?v=15">
-<script src="js/common.js?v=15"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/styles.css?v=16">
+<script src="js/common.js?v=16"></script>
 </head>
 <body>
 <nav class="nav">
-  <div class="brand"><span class="logo">⚖</span> Position Sizer</div>
+  <div class="brand"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M7 21h10M4 7h16M4 7l-2.5 6a3 3 0 0 0 5 0zM20 7l-2.5 6a3 3 0 0 0 5 0z"/></svg></span> Position Sizer</div>
   <div class="tabs"><a href="index.html">Crypto</a><a href="forex.html" class="active">Forex &amp; CFDs</a></div>
   <div class="theme-ctl">
     <button class="icon-btn" id="modeBtn" aria-label="Toggle dark/light mode"></button>
@@ -72,7 +73,7 @@
         <div id="alerts"></div>
         <div class="hero">
           <div class="stat main"><div class="k">Lot size</div><div class="v" id="lots">—</div><div class="s" id="lotsSub"></div>
-            <div class="copy-row"><button class="copy-chip" id="copyLots" type="button">⧉ Copy lots</button></div></div>
+            <div class="copy-row"><button class="copy-chip" id="copyLots" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>Copy lots</button></div></div>
           <div class="stat"><div class="k">Loss at SL</div><div class="v down" id="loss">—</div><div class="s" id="lossSub"></div></div>
           <div class="stat"><div class="k">Profit at TP</div><div class="v up" id="profit">—</div><div class="s" id="rr"></div></div>
         </div>
@@ -81,8 +82,8 @@
   </div>
 </main>
 <footer>Estimates only. Spreads, commissions, swaps and broker specs change real results. Not financial advice.</footer>
-<script src="js/instruments.js?v=15"></script>
-<script src="js/rates.js?v=15"></script>
-<script src="js/forex.js?v=15"></script>
+<script src="js/instruments.js?v=16"></script>
+<script src="js/rates.js?v=16"></script>
+<script src="js/forex.js?v=16"></script>
 </body>
 </html>
